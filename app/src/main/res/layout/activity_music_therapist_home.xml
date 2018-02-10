@@ -80,7 +80,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:backgroundTint="@color/colorPrimary"
-                android:text="Add PAL Device"
+                android:text="Start PAL Session"
                 android:textColor="@android:color/background_light"
                 tools:textAllCaps="false" />
 
