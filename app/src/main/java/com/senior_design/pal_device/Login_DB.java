@@ -1,5 +1,14 @@
 package com.senior_design.pal_device;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+
 /**
  * Created by Sarah on 2/9/2018.
  */
@@ -16,5 +25,6 @@ public class Login_DB {
         this.password = password;
         this.access = access;
     }
+
 
 }
