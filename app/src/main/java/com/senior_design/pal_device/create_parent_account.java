@@ -61,7 +61,6 @@ public class create_parent_account extends AppCompatActivity {
                 String e = email.getText().toString();
 
                     if(patients_DB.get(p) != null){
-                        System.out.println(patients_DB.get(p).parentAccount.toString());
                         if(patients_DB.get(p).hospitalID.equals(p.toString()) && patients_DB.get(p).parentAccountCreated.equals("No")){
                             //Generates a new password and displays it to the screen
                             String Capital_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -91,10 +90,6 @@ public class create_parent_account extends AppCompatActivity {
                             //pushes the new parent account to the server
                             Login_DB temp = new Login_DB(finalUser, finalPass, "Parent");
 
-                            System.out.println("*********************************************");
-                            System.out.println(loginInformation);
-                            System.out.println("*********************************************");
-
                             loginInformation.put(finalUser, temp);
                             myRef.child("Login").setValue(loginInformation);
 
@@ -117,6 +112,9 @@ public class create_parent_account extends AppCompatActivity {
                                         }
                                     });
 
+                            Intent intent = new Intent(create_parent_account.this, create_parent_account.class);
+                            startActivity(intent);
+
 
                     } else {
                         AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(create_parent_account.this);
@@ -132,6 +130,7 @@ public class create_parent_account extends AppCompatActivity {
 
                                     }
                                 });
+
                     }
                 } else {
                     AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(create_parent_account.this);
