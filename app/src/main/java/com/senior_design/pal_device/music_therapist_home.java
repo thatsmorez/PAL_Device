@@ -33,6 +33,14 @@ public class music_therapist_home extends AppCompatActivity {
             }
         });
 
+        record.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(music_therapist_home.this, record_lullaby_1.class);
+                startActivity(intent);
+            }
+        });
+
         help.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

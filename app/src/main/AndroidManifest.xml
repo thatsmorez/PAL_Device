@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.senior_design.pal_device">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MICROPHONE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -23,7 +28,8 @@
         <activity android:name=".physician_help" />
         <activity android:name=".music_therapist_help" />
         <activity android:name=".create_parent_account" />
-        <activity android:name=".record_lullaby_1"></activity>
+        <activity android:name=".record_lullaby_1" />
+        <activity android:name=".record_lullaby_2"></activity>
     </application>
 
 </manifest>

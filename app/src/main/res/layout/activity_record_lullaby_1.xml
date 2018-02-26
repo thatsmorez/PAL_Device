@@ -11,11 +11,11 @@
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
-        android:layout_height="36dp"
-        android:layout_marginBottom="25dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="30dp"
         android:layout_marginEnd="20dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="21dp"
+        android:layout_marginTop="26dp"
         android:background="@drawable/rounded_square"
         android:orientation="vertical"
         android:padding="5dp"
@@ -36,8 +36,8 @@
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="0dp"
-        android:layout_height="61dp"
-        android:layout_marginBottom="30dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="36dp"
         android:background="@color/colorPrimary"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
@@ -80,8 +80,8 @@
     <LinearLayout
         android:id="@+id/linearLayout4"
         android:layout_width="0dp"
-        android:layout_height="61dp"
-        android:layout_marginBottom="41dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="46dp"
         android:background="@color/colorPrimary"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/button9"
@@ -123,13 +123,13 @@
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="0dp"
-        android:layout_height="69dp"
-        android:layout_marginBottom="17dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="23dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button9">
+        app:layout_constraintTop_toBottomOf="@+id/button10">
 
         <Button
             android:id="@+id/button8"
@@ -150,15 +150,29 @@
 
     <Button
         android:id="@+id/button9"
-        android:layout_width="106dp"
-        android:layout_height="56dp"
-        android:layout_marginBottom="154dp"
+        android:layout_width="0dp"
+        android:layout_height="49dp"
+        android:layout_marginBottom="23dp"
         android:backgroundTint="@android:color/holo_red_dark"
         android:text="Record"
+        app:layout_constraintBottom_toTopOf="@+id/button10"
+        app:layout_constraintEnd_toEndOf="@+id/button10"
+        app:layout_constraintStart_toStartOf="@+id/button10"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
+        tools:textAllCaps="false"
+        tools:textColor="@android:color/background_light" />
+
+    <Button
+        android:id="@+id/button10"
+        android:layout_width="106dp"
+        android:layout_height="49dp"
+        android:layout_marginBottom="80dp"
+        android:backgroundTint="@android:color/holo_red_dark"
+        android:text="Stop"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
+        app:layout_constraintTop_toBottomOf="@+id/button9"
         tools:textAllCaps="false"
         tools:textColor="@android:color/background_light" />
 </android.support.constraint.ConstraintLayout>
