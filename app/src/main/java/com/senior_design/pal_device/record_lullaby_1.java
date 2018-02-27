@@ -21,6 +21,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -68,16 +70,17 @@ public class record_lullaby_1 extends AppCompatActivity {
                 if(patients_DB.get(p) != null) {
                     if(patients_DB.get(p).hospitalID.equals(p.toString())) {
                         if(l != null) {
-                            if (mStartRecording) {
-                                //Create file path name
-                                String temp = l.replace(" ", "_");
-                                mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-                                mFileName += "/" + temp + ".3gp";
-                                System.out.println("**************************************");
-                                System.out.println(mFileName);
-                                startRecording();
-                                record.setText("NOW RECORDING");
-                                mStartRecording = false;
+                                //No lullaby exists of the patient yet
+                                if (mStartRecording) {
+                                    //Create file path name
+                                    String temp = l.replace(" ", "_");
+                                    mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+                                    mFileName += "/" + temp + ".3gp";
+                                    System.out.println("**************************************");
+                                    System.out.println(mFileName);
+                                    startRecording();
+                                    record.setText("NOW RECORDING");
+                                    mStartRecording = false;
                             }
                         } else {
                             AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(record_lullaby_1.this);
