@@ -29,7 +29,8 @@
         <activity android:name=".music_therapist_help" />
         <activity android:name=".create_parent_account" />
         <activity android:name=".record_lullaby_1" />
-        <activity android:name=".record_lullaby_2"></activity>
+        <activity android:name=".record_lullaby_2" />
+        <activity android:name=".associate_pal"></activity>
     </application>
 
 </manifest>
