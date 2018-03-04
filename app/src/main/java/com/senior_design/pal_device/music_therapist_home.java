@@ -33,6 +33,14 @@ public class music_therapist_home extends AppCompatActivity {
             }
         });
 
+        addPAL.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Intent intent = new Intent(music_therapist_home.this, associate_pal.class);
+                startActivity(intent);
+            }
+        });
+
         record.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
