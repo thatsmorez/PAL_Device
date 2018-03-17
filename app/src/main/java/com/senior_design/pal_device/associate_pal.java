@@ -58,6 +58,7 @@ public class associate_pal extends AppCompatActivity {
                             bundle.putString("uid", pal.uid);
                             bundle.putString("patientID", patient.hospitalID);
                             bundle.putString("lullabyRecorded", patient.lullabyRecorded);
+                            bundle.putString("PalID", patient.palID);
                             intent.putExtras(bundle);
                             startActivity(intent);
 

@@ -51,6 +51,9 @@ public class login extends AppCompatActivity {
                     if(loginInformation.get(usern).username.equals(usern) && loginInformation.get(usern).password.equals(pass)){
                         if(loginInformation.get(usern).access.equals("Parent")){
                             Intent intent = new Intent(login.this, parent_home.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putString("parentUser", usern);
+                            intent.putExtras(bundle);
                             startActivity(intent);
                         } if(loginInformation.get(usern).access.equals("MusicTherapist")){
                             Intent intent = new Intent(login.this, music_therapist_home.class);

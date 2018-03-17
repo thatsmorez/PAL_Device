@@ -30,7 +30,9 @@
         <activity android:name=".create_parent_account" />
         <activity android:name=".record_lullaby_1" />
         <activity android:name=".record_lullaby_2" />
-        <activity android:name=".associate_pal"></activity>
+        <activity android:name=".associate_pal" />
+        <activity android:name=".recording_data" />
+        <activity android:name=".patient_status_parent"></activity>
     </application>
 
 </manifest>

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
@@ -32,6 +33,7 @@ public class record_lullaby_2 extends AppCompatActivity {
     private static String mFileName = null;
     HashMap<String, Patient_DB> patients_DB;
     Button accept, recordAgain, listen;
+    TextView patString, lullabyString;
     private static final String LOG_TAG = "Record_Log";
     MediaPlayer mPlayer;
     String patientID, nameOfFile;
@@ -49,6 +51,8 @@ public class record_lullaby_2 extends AppCompatActivity {
         accept = (Button) findViewById(R.id.accept);
         recordAgain = (Button) findViewById(R.id.recordAgain);
         listen = (Button) findViewById(R.id.listen);
+        patString = (TextView) findViewById(R.id.PatientID);
+        lullabyString = (TextView) findViewById(R.id.LullabyName);
 
         patients_DB = new HashMap<String, Patient_DB>();
         Bundle bundle = getIntent().getExtras();
@@ -56,6 +60,9 @@ public class record_lullaby_2 extends AppCompatActivity {
         nameOfFile = bundle.getString("fileName");
         patientID = bundle.getString("patientID");
         mFileName = bundle.getString("filePath");
+
+        patString.setText("Patient I.D.: " + patientID);
+        lullabyString.setText("Lullaby Name: " + nameOfFile);
 
         recordAgain.setOnClickListener(new View.OnClickListener() {
             @Override
