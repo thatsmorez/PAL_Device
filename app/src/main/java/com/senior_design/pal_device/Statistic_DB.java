@@ -12,16 +12,20 @@ public class Statistic_DB {
     public String palID;
     public String patient;
     public String round;
-    public HashMap<String, Data_DB>  data;
+    public String status;
+    public String released;
+    public HashMap<String, String>  data;
 
     public Statistic_DB(){}
 
-    public Statistic_DB(String date, String graph, String palID, String patient, String round, HashMap<String, Data_DB> data ) {
+    public Statistic_DB(String date, String graph, String palID, String patient, String round, HashMap<String, String> data, String status, String released ) {
         this.date = date;
         this.graph = graph;
         this.palID = palID;
         this.patient = patient;
         this.round = round;
         this.data= data;
+        this.status = status;
+        this.released = released;
     }
 }

@@ -22,7 +22,7 @@ public class recording_data extends AppCompatActivity {
     Button returnHome, record;
     Boolean buttonPressed;
     TextView title;
-    HashMap<String, Data_DB> data_DB;
+    HashMap<String, String> data_DB;
     HashMap<String, Statistic_DB> stats_DB;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     final DatabaseReference myRef = database.getReference();
@@ -106,16 +106,17 @@ public class recording_data extends AppCompatActivity {
                 String palID = (String) dataSnapshot.child("PalID").getValue();
                 String patient = (String) dataSnapshot.child("PatientID").getValue();
                 String round = (String) dataSnapshot.child("Round").getValue();
+                String status = (String) dataSnapshot.child("Status").getValue();
+                String released = (String) dataSnapshot.child("ReleasedToParent").getValue();
 
-                data_DB = new HashMap<String, Data_DB>();
+                data_DB = new HashMap<String, String>();
                 ChildEventListener childEventListener = myRef.child("Statistics").child(patientID).child(round).child("Data").addChildEventListener(new ChildEventListener() {
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot1, String prevChildKey1){
                         String time = (String) dataSnapshot1.getKey();
                         String pressure = (String) dataSnapshot1.child(time).getValue();
 
-                        Data_DB temp = new Data_DB(time, pressure);
-                        data_DB.put(time, temp);
+                        data_DB.put(time, pressure);
                     }
 
                     @Override
@@ -137,7 +138,7 @@ public class recording_data extends AppCompatActivity {
 
 
 
-                Statistic_DB stat = new Statistic_DB(date, graph, palID, patient, round, data_DB );
+                Statistic_DB stat = new Statistic_DB(date, graph, palID, patient, round, data_DB, status, released );
                 stats_DB.put(round, stat);
                 roundCounter++;
             }
