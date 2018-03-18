@@ -32,7 +32,9 @@
         <activity android:name=".record_lullaby_2" />
         <activity android:name=".associate_pal" />
         <activity android:name=".recording_data" />
-        <activity android:name=".patient_status_parent"></activity>
+        <activity android:name=".patient_status_parent" />
+        <activity android:name=".release_information" />
+        <activity android:name=".confirm_release"></activity>
     </application>
 
 </manifest>

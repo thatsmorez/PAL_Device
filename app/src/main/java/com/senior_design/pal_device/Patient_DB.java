@@ -13,8 +13,10 @@ public class Patient_DB {
     public String palID;
     public String parentAccountCreated;
     public String parentAccount;
+    public String musicTherapist;
+    public String physician;
 
-    public Patient_DB(String currentStatus, String fname, String hospitalID, String lname, String lullabyRecorded, String palID, String parentAccountCreated, String parentAccount) {
+    public Patient_DB(String currentStatus, String fname, String hospitalID, String lname, String lullabyRecorded, String palID, String parentAccountCreated, String parentAccount, String musicTherapist, String physician) {
         this.currentStatus = currentStatus;
         this.fname = fname;
         this.hospitalID = hospitalID;
@@ -23,6 +25,8 @@ public class Patient_DB {
         this.palID = palID;
         this.parentAccountCreated = parentAccountCreated;
         this.parentAccount = parentAccount;
+        this.musicTherapist = musicTherapist;
+        this.physician = physician;
     }
 
 

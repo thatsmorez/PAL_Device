@@ -35,9 +35,6 @@ public class parent_home extends AppCompatActivity {
 
         accountUser = bundle.getString("parentUser");
 
-        System.out.println("**************************");
-        System.out.println(accountUser);
-        System.out.println("**************************");
         patients_DB = new HashMap<String, Patient_DB>();
 
         statistic.setOnClickListener(new View.OnClickListener(){
@@ -87,7 +84,9 @@ public class parent_home extends AppCompatActivity {
                 String palID = (String) dataSnapshot.child("PalID").getValue();
                 String parentAccountCreated = (String) dataSnapshot.child("ParentAccountCreated").getValue();
                 String parentAccount = (String) dataSnapshot.child("ParentAccount").getValue();
-                Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded,  palID,  parentAccountCreated, parentAccount);
+                String musicTherapist = (String) dataSnapshot.child("musicTherapist").getValue();
+                String doctor = (String) dataSnapshot.child("Doctor").getValue();
+                Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded,  palID,  parentAccountCreated, parentAccount,musicTherapist,doctor);
                 patients_DB.put(hospitalID, patient_db);
 
                 System.out.println("**************************");

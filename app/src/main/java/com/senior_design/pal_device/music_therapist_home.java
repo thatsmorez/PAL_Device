@@ -12,6 +12,8 @@ import android.widget.Button;
 public class music_therapist_home extends AppCompatActivity {
 
     Button statistic, release_info, create_account, addPAL, record, help, logout;
+    String accountUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,6 +26,21 @@ public class music_therapist_home extends AppCompatActivity {
         record = (Button) findViewById(R.id.button3);
         help = (Button) findViewById(R.id.button2);
         logout = (Button) findViewById(R.id.button1);
+
+        Bundle bundle = getIntent().getExtras();
+
+        accountUser = bundle.getString("user");
+
+        release_info.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Intent intent = new Intent (music_therapist_home.this, release_information.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
 
         create_account.setOnClickListener(new View.OnClickListener(){
             @Override

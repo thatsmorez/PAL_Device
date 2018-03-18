@@ -57,9 +57,15 @@ public class login extends AppCompatActivity {
                             startActivity(intent);
                         } if(loginInformation.get(usern).access.equals("MusicTherapist")){
                             Intent intent = new Intent(login.this, music_therapist_home.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putString("user", usern);
+                            intent.putExtras(bundle);
                             startActivity(intent);
                         } if(loginInformation.get(usern).access.equals("Physician")){
                             Intent intent = new Intent(login.this, physician_home.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putString("user", usern);
+                            intent.putExtras(bundle);
                             startActivity(intent);
                         }
                     }
