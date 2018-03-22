@@ -42,6 +42,7 @@ public class record_lullaby_1 extends AppCompatActivity {
     private String [] permissions = {Manifest.permission.RECORD_AUDIO};
     private boolean permissionToRecordAccepted = false;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    String accountUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,9 @@ public class record_lullaby_1 extends AppCompatActivity {
         lullabyName = (EditText) findViewById(R.id.editText2);
         mStartRecording = true;
         patients_DB = new HashMap<String, Patient_DB>();
+
+        Bundle bundle = getIntent().getExtras();
+        accountUser = bundle.getString("user");
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
@@ -75,9 +79,7 @@ public class record_lullaby_1 extends AppCompatActivity {
                                     //Create file path name
                                     String temp = l.replace(" ", "_");
                                     mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-                                    mFileName += "/" + temp + ".3gp";
-                                    System.out.println("**************************************");
-                                    System.out.println(mFileName);
+                                    mFileName += "/" + temp + ".m4a";
                                     startRecording();
                                     record.setText("NOW RECORDING");
                                     mStartRecording = false;
@@ -130,8 +132,9 @@ public class record_lullaby_1 extends AppCompatActivity {
                     bundle.putString("patientID", patientID.getText().toString());
                     String l = lullabyName.getText().toString();
                     String temp = l.replace(" ", "_");
-                    temp += ".3gp";
+                    temp += ".m4a";
                     bundle.putString("fileName", temp);
+                    bundle.putString("user", accountUser);
                     intent.putExtras(bundle);
                     startActivity(intent);
                 }
@@ -142,6 +145,9 @@ public class record_lullaby_1 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(record_lullaby_1.this, music_therapist_home.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });

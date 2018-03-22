@@ -25,6 +25,7 @@ public class create_parent_account extends AppCompatActivity {
     private FirebaseAuth mAuth;
     public HashMap<String, Patient_DB> patients_DB;
     public HashMap<String, Login_DB> loginInformation;
+    String accountUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +36,8 @@ public class create_parent_account extends AppCompatActivity {
         returnHome = (Button) findViewById(R.id.button8);
         createAccount = (Button) findViewById(R.id.button9);
 
+        Bundle bundle = getIntent().getExtras();
+        accountUser = bundle.getString("user");
 
         mAuth = FirebaseAuth.getInstance();
         patients_DB = new HashMap<String, Patient_DB>();
@@ -46,6 +49,9 @@ public class create_parent_account extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(create_parent_account.this, music_therapist_home.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });
@@ -113,6 +119,9 @@ public class create_parent_account extends AppCompatActivity {
                                     });
 
                             Intent intent = new Intent(create_parent_account.this, create_parent_account.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putString("user", accountUser);
+                            intent.putExtras(bundle);
                             startActivity(intent);
 
 

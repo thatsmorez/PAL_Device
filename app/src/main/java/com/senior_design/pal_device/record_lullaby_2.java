@@ -36,7 +36,7 @@ public class record_lullaby_2 extends AppCompatActivity {
     TextView patString, lullabyString;
     private static final String LOG_TAG = "Record_Log";
     MediaPlayer mPlayer;
-    String patientID, nameOfFile;
+    String patientID, nameOfFile, accountUser;
     StorageReference filepathStorage;
     FirebaseDatabase database;
     DatabaseReference myRef;
@@ -54,12 +54,14 @@ public class record_lullaby_2 extends AppCompatActivity {
         patString = (TextView) findViewById(R.id.PatientID);
         lullabyString = (TextView) findViewById(R.id.LullabyName);
 
+
         patients_DB = new HashMap<String, Patient_DB>();
         Bundle bundle = getIntent().getExtras();
 
         nameOfFile = bundle.getString("fileName");
         patientID = bundle.getString("patientID");
         mFileName = bundle.getString("filePath");
+        accountUser = bundle.getString("user");
 
         patString.setText("Patient I.D.: " + patientID);
         lullabyString.setText("Lullaby Name: " + nameOfFile);
@@ -68,6 +70,9 @@ public class record_lullaby_2 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(record_lullaby_2.this, record_lullaby_1.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });
@@ -107,6 +112,9 @@ public class record_lullaby_2 extends AppCompatActivity {
                         });
 
                 Intent intent = new Intent(record_lullaby_2.this, music_therapist_home.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });

@@ -24,7 +24,7 @@ public class associate_pal extends AppCompatActivity {
     HashMap<String, PALDevice_DB> palDevice_DB;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     final DatabaseReference myRef = database.getReference();
-
+    String accountUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,29 +38,35 @@ public class associate_pal extends AppCompatActivity {
         patients_DB = new HashMap<String, Patient_DB>();
         palDevice_DB = new HashMap<String, PALDevice_DB>();
 
+        Bundle bundle = getIntent().getExtras();
+        accountUser = bundle.getString("user");
+
         associatePAL.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 if(patientID.getText().toString() != null && palID.getText().toString() != null){
                     //Now validate that the inputted info is in database
                     if(palDevice_DB.get(palID.getText().toString()) != null){
-                        if(palDevice_DB.get(patientID.getText().toString()) != null){
-                            PALDevice_DB pal = palDevice_DB.get(palID.getText().toString());
-                            Patient_DB patient = patients_DB.get(patientID.getText().toString());
+                        if(patients_DB.get(patientID.getText().toString()) != null){
+                            if(patients_DB.get(patientID.getText().toString()).musicTherapist.equals(accountUser)) {
+                                PALDevice_DB pal = palDevice_DB.get(palID.getText().toString());
+                                Patient_DB patient = patients_DB.get(patientID.getText().toString());
 
-                            myRef.child("Patient").child(patientID.getText().toString()).child("PalID").setValue(palID.getText().toString());
-                            myRef.child("Bluetooth").child(palID.getText().toString()).child("inUse").setValue("Yes");
-                            myRef.child("Bluetooth").child(palID.getText().toString()).child("Patient").setValue(patientID.getText().toString());
+                                myRef.child("Patient").child(patientID.getText().toString()).child("PalID").setValue(palID.getText().toString());
+                                myRef.child("Bluetooth").child(palID.getText().toString()).child("inUse").setValue("Yes");
+                                myRef.child("Bluetooth").child(palID.getText().toString()).child("Patient").setValue(patientID.getText().toString());
 
-                            //Go to the next page.
-                            Intent intent = new Intent(associate_pal.this, recording_data.class);
-                            Bundle bundle = new Bundle();
-                            bundle.putString("uid", pal.uid);
-                            bundle.putString("patientID", patient.hospitalID);
-                            bundle.putString("lullabyRecorded", patient.lullabyRecorded);
-                            bundle.putString("PalID", patient.palID);
-                            intent.putExtras(bundle);
-                            startActivity(intent);
+                                //Go to the next page.
+                                Intent intent = new Intent(associate_pal.this, recording_data.class);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("uid", pal.uid);
+                                bundle.putString("patientID", patient.hospitalID);
+                                bundle.putString("lullabyRecorded", patient.lullabyRecorded);
+                                bundle.putString("PalID", patient.palID);
+                                bundle.putString("user", accountUser);
+                                intent.putExtras(bundle);
+                                startActivity(intent);
+                            }
 
                         }else{
                             //Invalid Patient ID has been entered
@@ -117,6 +123,9 @@ public class associate_pal extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(associate_pal.this, music_therapist_home.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });

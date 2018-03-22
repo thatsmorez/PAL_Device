@@ -46,6 +46,9 @@ public class music_therapist_home extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 Intent intent = new Intent (music_therapist_home.this, create_parent_account.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });
@@ -54,6 +57,9 @@ public class music_therapist_home extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 Intent intent = new Intent(music_therapist_home.this, associate_pal.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });
@@ -62,6 +68,9 @@ public class music_therapist_home extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(music_therapist_home.this, record_lullaby_1.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });
@@ -70,6 +79,9 @@ public class music_therapist_home extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(music_therapist_home.this, music_therapist_help.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });

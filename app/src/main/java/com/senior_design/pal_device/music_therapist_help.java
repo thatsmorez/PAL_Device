@@ -8,10 +8,13 @@ import android.widget.Button;
 
 public class music_therapist_help extends AppCompatActivity {
     Button returnHome;
+    String accountUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_therapist_help);
+        Bundle bundle = getIntent().getExtras();
+        accountUser = bundle.getString("user");
 
         returnHome = (Button) findViewById(R.id.button8);
 
@@ -19,6 +22,9 @@ public class music_therapist_help extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(music_therapist_help.this, music_therapist_home.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });
