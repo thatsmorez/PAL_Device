@@ -2,7 +2,7 @@ package com.senior_design.pal_device;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.v4.content.res.FontResourcesParserCompat;
+//import android.support.v4.content.res.FontResourcesParserCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;

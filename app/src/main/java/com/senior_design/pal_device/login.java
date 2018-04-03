@@ -1,6 +1,7 @@
 package com.senior_design.pal_device;
 
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.widget.EditText;
 import java.util.HashMap;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -37,7 +39,8 @@ public class login extends AppCompatActivity {
         ed1 = (EditText) findViewById(R.id.editText1);
         ed2 = (EditText) findViewById(R.id.editText2);
 
-        mAuth = FirebaseAuth.getInstance();
+        //FirebaseApp.initializeApp(this.getApplicationContext());
+
         loginInformation = new HashMap<String, Login_DB>();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         mRef = database.getReference("Login");
@@ -120,12 +123,6 @@ public class login extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-    }
 
 }
 

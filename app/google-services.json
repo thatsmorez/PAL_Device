@@ -42,6 +42,13 @@
             {
               "client_id": "455904962178-dii2tdj5fuhqtq00f6p9d43ut4llp48r.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "455904962178-o3a753egvrrhqqtt5a68pponefsc8rl5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.seniordesigndatabase.ios"
+              }
             }
           ]
         },

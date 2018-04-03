@@ -36,8 +36,8 @@
 
     <Button
         android:id="@+id/record"
-        android:layout_width="189dp"
-        android:layout_height="0dp"
+        android:layout_width="202dp"
+        android:layout_height="72dp"
         android:layout_marginBottom="383dp"
         android:backgroundTint="@color/colorPrimary"
         android:text="Start Recording"
