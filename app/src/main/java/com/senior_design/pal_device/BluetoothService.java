@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +14,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 import static android.content.ContentValues.TAG;
@@ -359,14 +361,41 @@ public class BluetoothService {
             BluetoothSocket tmp = null;
             mmDevice = device;
 
-            try {
+            System.out.println("IN ACCEPT Name: " + device.getName());
+
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
                 // MY_UUID is the app's UUID string, also used in the server code.
-                tmp = device.createRfcommSocketToServiceRecord(MY_UUID_SECURE);
-            } catch (IOException e) {
-                Log.e(TAG, "Socket's create() method failed", e);
-            }
+                try {
+                    pairDevice(device);
+                    tmp = createBluetoothSocket(device);
+                } catch (Exception e) {
+                    Log.e(TAG, "Could not create Insecure RFComm Connection", e);
+                }
             mmSocket = tmp;
+            System.out.println("mmSocket Name: "+ mmSocket.getConnectionType());
+            System.out.println("mmSocket Remote: " + mmSocket.getRemoteDevice().getName());
+        }
+
+
+        private void pairDevice(BluetoothDevice device) {
+            try {
+                Method method = device.getClass().getMethod("createBond", (Class[]) null);
+                method.invoke(device, (Object[]) null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+            if(Build.VERSION.SDK_INT >= 10){
+                try {
+                    final Method  m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", new Class[] { UUID.class });
+                    return (BluetoothSocket) m.invoke(device, MY_UUID_SECURE);
+                } catch (Exception e) {
+                    Log.e(TAG, "Could not create Insecure RFComm Connection",e);
+                }
+            }
+            return  device.createRfcommSocketToServiceRecord(MY_UUID_SECURE);
         }
 
             public void run() {

@@ -121,11 +121,11 @@ public class recording_data extends AppCompatActivity {
         }
 
 
-            if(mBluetoothAdapter.getScanMode()!= BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE){
-              Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-              discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-              startActivity(discoverableIntent);
-            }
+        if(mBluetoothAdapter.getScanMode()!= BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE){
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            startActivity(discoverableIntent);
+        }
 
         record.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -148,13 +148,13 @@ public class recording_data extends AppCompatActivity {
                             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                                 MediaPlayer mPlayer = new MediaPlayer();
                                 //try {
-                                  //  mPlayer.setDataSource(localFile.getAbsolutePath());
-                                   // mPlayer.prepare();
-                                    //mPlayer.start();
+                                //  mPlayer.setDataSource(localFile.getAbsolutePath());
+                                // mPlayer.prepare();
+                                //mPlayer.start();
                                 //} catch (IOException e) {
-                                 //   Log.e(LOG_TAG, "prepare() failed");
-                                 //}
-                           }
+                                //   Log.e(LOG_TAG, "prepare() failed");
+                                //}
+                            }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception exception) {
@@ -180,8 +180,8 @@ public class recording_data extends AppCompatActivity {
                     }
 
 
-                   // ActivityCompat.requestPermissions(recording_data.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                          //  REQUEST_FINE_LOCATION_PERMISSIONS);
+                    // ActivityCompat.requestPermissions(recording_data.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    //  REQUEST_FINE_LOCATION_PERMISSIONS);
                     ActivityCompat.requestPermissions(recording_data.this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
                             ACCESS_COARSE_LOCATION_PERMISSIONS);
 
@@ -213,7 +213,7 @@ public class recording_data extends AppCompatActivity {
 
 
                     //Move to the third page of the sequence
-                   // Intent intent = new Intent(recording_data.this, completeRecording.class);
+                    // Intent intent = new Intent(recording_data.this, completeRecording.class);
                     //startActivity(intent);
                 }
             }
@@ -269,7 +269,7 @@ public class recording_data extends AppCompatActivity {
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
                     }
-                    });
+                });
 
 
 
@@ -395,12 +395,12 @@ public class recording_data extends AppCompatActivity {
                 System.out.println("MAC Address: " + deviceHardwareAddress);
                 if(deviceName !=  null) {
                     if (deviceName.equals("Pressure Sensor")) {
-                            System.out.println("HERE!!!!!!!!!!!!!!!!");
-                            BluetoothDevice device1 = mBluetoothAdapter.getRemoteDevice(deviceHardwareAddress);
-                            System.out.println("Remote Device: " + device1);
-                            BluetoothService fragment = new BluetoothService(mHandler, device1);
-                            fragment.connect(device1);
-                            fragment.start();
+                        System.out.println("HERE!!!!!!!!!!!!!!!!");
+                        BluetoothDevice device1 = mBluetoothAdapter.getRemoteDevice(deviceHardwareAddress);
+                        System.out.println("Remote Device: " + device1);
+                        BluetoothService fragment = new BluetoothService(mHandler, device1);
+                        fragment.start();
+                        fragment.connect(device);
                     }
                 }
             }
