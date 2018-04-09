@@ -40,6 +40,10 @@ import java.io.File;
 import java.io.IOException;
 //import java.time.LocalDateTime;
 //import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.UUID;
@@ -50,6 +54,7 @@ public class recording_data extends AppCompatActivity {
     Boolean buttonPressed;
     TextView title;
     HashMap<String, String> data_DB;
+    HashMap<String,String>  push_data_DB;
     HashMap<String, Statistic_DB> stats_DB;
     HashMap<String, Patient_DB> patients_DB;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -61,6 +66,7 @@ public class recording_data extends AppCompatActivity {
     private static final String LOG_TAG = "Record_Log";
 
 
+
     //Bluetooth Stuff
     BluetoothAdapter mBluetoothAdapter;
     int REQUEST_ENABLE_BT = 1;
@@ -69,6 +75,9 @@ public class recording_data extends AppCompatActivity {
     final int REQUEST_FINE_LOCATION_PERMISSIONS = 2;
     final int ACCESS_COARSE_LOCATION_PERMISSIONS = 3;
     private BluetoothService  mService = null;
+
+    File localFile;
+    StorageReference mStorage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,9 +149,9 @@ public class recording_data extends AppCompatActivity {
                     //Download the lullaby
                     buttonPressed = true;
                     String lullabyLocation =  songRet;
-                    StorageReference mStorage= FirebaseStorage.getInstance().getReferenceFromUrl(lullabyLocation);
+                    mStorage = FirebaseStorage.getInstance().getReferenceFromUrl(lullabyLocation);
                     try {
-                        final File localFile = load_file();
+                        localFile = load_file();
                         mStorage.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                             @Override
                             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
@@ -395,18 +404,44 @@ public class recording_data extends AppCompatActivity {
                 System.out.println("MAC Address: " + deviceHardwareAddress);
                 if(deviceName !=  null) {
                     if (deviceName.equals("Pressure Sensor")) {
-                        System.out.println("HERE!!!!!!!!!!!!!!!!");
                         BluetoothDevice device1 = mBluetoothAdapter.getRemoteDevice(deviceHardwareAddress);
                         System.out.println("Remote Device: " + device1);
                         BluetoothService fragment = new BluetoothService(mHandler, device1);
                         fragment.start();
-                        fragment.connect(device);
+                        push_data_DB = fragment.getPALData(localFile, mStorage);
+                        createNewDataDBEntry(push_data_DB);
                     }
                 }
             }
         }
     };
 
+    public void createNewDataDBEntry(HashMap<String,String> data){
+        SimpleDateFormat dtf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        Date now = new Date();
+        String date = dtf.format(now);
+        String graph = "null";
+        String paltemp = palID;
+        String patient = patientID;
+        String round = Integer.toString(roundCounter + 1);
+        String status = "Average";
+        String released = "No";
+
+        Statistic_DB stat = new Statistic_DB(date, graph, paltemp, patient, round, data, status, released );
+        stats_DB.put(round, stat);
+
+        //Go to Next page
+
+    }
+
+    public String determineStatus() {
+        String below = "Below Average";
+        String normal = "Average";
+        String above = "Above Average";
+
+
+        return above;
+    }
 
     @Override
     protected void onDestroy() {

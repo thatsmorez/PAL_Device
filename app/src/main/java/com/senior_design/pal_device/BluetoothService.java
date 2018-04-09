@@ -5,16 +5,25 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static android.content.ContentValues.TAG;
@@ -37,7 +46,6 @@ public class BluetoothService {
     final BluetoothAdapter mAdapter;
     final Handler mHandler;
     AcceptThread mSecureAcceptThread;
-    ConnectThread mConnectThread;
     ConnectedThread mConnectedThread;
     int mState;
     int mNewState;
@@ -60,12 +68,6 @@ public class BluetoothService {
 
     public synchronized void start() {
 
-        // Cancel any thread attempting to make a connection
-        if (mConnectThread != null) {
-            mConnectThread.cancel();
-            mConnectThread = null;
-        }
-
         // Cancel any thread currently running a connection
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
@@ -74,45 +76,100 @@ public class BluetoothService {
 
         // Start the thread to listen on a BluetoothServerSocket
         if (mSecureAcceptThread == null) {
-            System.out.println("Making the Accept Thread");
             mSecureAcceptThread = new AcceptThread(mmDevice);
             mSecureAcceptThread.run();
         }
 
     }
 
-    public synchronized void connect(BluetoothDevice device) {
-        Log.d(TAG, "connect to: " + device);
+    public synchronized HashMap<String,String> getPALData(final File musicFile, StorageReference mStorage){
+        //Variable for the read
+        int timesBelowThreshold = 0;
+        int timesAboveThreshold = 0;
+        boolean playingMusic = false;
+        final int timeBelow = 5000;
+        int minThreshold = 2;
+        int timeBeforePlay = 1000;
+        final MediaPlayer mPlayer = new MediaPlayer();
+        HashMap<String, String> data_DBref = new HashMap<String,String>();
 
-        // Cancel any thread attempting to make a connection
-        if (mState == STATE_CONNECTING) {
-            if (mConnectThread != null) {
-                mConnectThread.cancel();
-                mConnectThread = null;
+
+        //Verify that we have  a connected socket
+        if(mSecureAcceptThread == null){
+            return null;
+        }
+
+        //Gets the input and output streams from the PAL Device
+        mConnectedThread = new ConnectedThread(mmSocket);
+
+        //If the input/output stream aren't initialized properly
+        if(mConnectedThread == null){
+            stop();
+        }
+
+        //15 minutes is 900000 milliseconds
+        //30 seconds is 30000
+        //5 seconds is 5000 milliseconds
+        //1 second is 1000 milliseconds
+        long startTime = System.currentTimeMillis();
+        while((System.currentTimeMillis()-startTime)< 30000){
+            int input = mConnectedThread.read();
+
+            //input from sensor is above our minThreshold
+            //In the event that music is not playing
+            if(input > minThreshold && playingMusic == false && timesAboveThreshold > timeBeforePlay){
+                mStorage.getFile(musicFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        try {
+                          mPlayer.setDataSource(musicFile.getAbsolutePath());
+                          mPlayer.prepare();
+                          mPlayer.start();
+                        } catch (IOException e) {
+                          System.out.println("prepare() failed");
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        System.out.println("Song was not loaded");
+                    }
+                });
+                playingMusic = true;
             }
+
+            //Increments the timesAboveThreshold
+            //Ensures that we don't play the music for outlining data
+            if(input > minThreshold ){
+                timesAboveThreshold++;
+            }
+
+
+            //input from sensor is below our minThreshold
+            //Ensures that we don't stop the music for outlining data
+            if(input < minThreshold && timesBelowThreshold < timeBelow){
+                timesBelowThreshold++;
+            }
+
+            //Please don't stop the music
+            if(playingMusic == true && timesBelowThreshold > timeBelow && input < minThreshold){
+                mPlayer.stop();
+            }
+
+            //Push data to hashmap to be pushed to the server
+            data_DBref.put(Long.toString(System.currentTimeMillis()), Integer.toString(input) );
+            System.out.println(Long.toString(System.currentTimeMillis()) + "     " + Integer.toString(input));
+
         }
 
-        // Cancel any thread currently running a connection
-        if (mConnectedThread != null) {
-            mConnectedThread.cancel();
-            mConnectedThread = null;
-        }
-
-        // Start the thread to connect with the given device
-        mConnectThread = new ConnectThread(device);
-        mConnectThread.start();
+        return data_DBref;
 
     }
+
 
     public synchronized void connected(BluetoothSocket socket, BluetoothDevice
             device) {
         Log.d(TAG, "connected");
-
-        // Cancel the thread that completed the connection
-        if (mConnectThread != null) {
-            mConnectThread.cancel();
-            mConnectThread = null;
-        }
 
         // Cancel any thread currently running a connection
         if (mConnectedThread != null) {
@@ -129,7 +186,7 @@ public class BluetoothService {
 
         // Start the thread to manage the connection and perform transmissions
         mConnectedThread = new ConnectedThread(socket);
-        mConnectedThread.run();
+        mConnectedThread.read();
 
         // Send the name of the connected device back to the UI Activity
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME);
@@ -145,11 +202,6 @@ public class BluetoothService {
      */
     public synchronized void stop() {
         Log.d(TAG, "stop");
-
-        if (mConnectThread != null) {
-            mConnectThread.cancel();
-            mConnectThread = null;
-        }
 
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
@@ -209,68 +261,6 @@ public class BluetoothService {
         BluetoothService.this.start();
     }
 
-    private class ConnectThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final BluetoothDevice mmDevice;
-        private String mSocketType;
-
-        public ConnectThread(BluetoothDevice device) {
-            mmDevice = device;
-            BluetoothSocket tmp = null;
-
-            // Get a BluetoothSocket for a connection with the
-            // given BluetoothDevice
-            try {
-                    tmp = device.createRfcommSocketToServiceRecord(
-                            MY_UUID_SECURE);
-            } catch (IOException e) {
-                Log.e(TAG, "Socket Type: " + mSocketType + "create() failed", e);
-            }
-            mmSocket = tmp;
-            mState = STATE_CONNECTING;
-        }
-
-        public void run() {
-            setName("ConnectThread" + mSocketType);
-
-            // Always cancel discovery because it will slow down a connection
-            mAdapter.cancelDiscovery();
-
-            // Make a connection to the BluetoothSocket
-            try {
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
-                mmSocket.connect();
-                System.out.println("Connected " + mmSocket);
-            } catch (IOException e) {
-                // Close the socket
-                try {
-                    mmSocket.close();
-                } catch (IOException e2) {
-                    Log.e(TAG, "unable to close() " + mSocketType +
-                            " socket during connection failure", e2);
-                }
-                connectionFailed();
-                return;
-            }
-
-            // Reset the ConnectThread because we're done
-            synchronized (BluetoothService.this) {
-                mConnectThread = null;
-            }
-
-            // Start the connected thread
-            connected(mmSocket, mmDevice);
-        }
-
-        public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) {
-                Log.e(TAG, "close() of connect " + mSocketType + " socket failed", e);
-            }
-        }
-    }
 
     public class ConnectedThread {
         private final BluetoothSocket mmSocket;
@@ -296,13 +286,13 @@ public class BluetoothService {
             mState = STATE_CONNECTED;
         }
 
-        public void run() {
+        public int read() {
             Log.i(TAG, "BEGIN mConnectedThread");
             byte[] buffer = new byte[1024];
-            int bytes;
+            int bytes = 0;
 
             // Keep listening to the InputStream while connected
-            while (mState == STATE_CONNECTED) {
+            //while (mState == STATE_CONNECTED) {
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
@@ -310,12 +300,14 @@ public class BluetoothService {
                     // Send the obtained bytes to the UI Activity
                     mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
                             .sendToTarget();
+                    return bytes;
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();
-                    break;
+                    return bytes;
+                    //break;
                 }
-            }
+            //}
         }
 
         /**
@@ -361,8 +353,6 @@ public class BluetoothService {
             BluetoothSocket tmp = null;
             mmDevice = device;
 
-            System.out.println("IN ACCEPT Name: " + device.getName());
-
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
                 // MY_UUID is the app's UUID string, also used in the server code.
                 try {
@@ -401,20 +391,15 @@ public class BluetoothService {
             public void run() {
             // Cancel discovery because it otherwise slows down the connection.
                 mAdapter.cancelDiscovery();
-                System.out.println("Running the Accept Thread");
                 System.out.println(mmSocket);
                     try {
                         // Connect to the remote device through the socket. This call blocks
                         // until it succeeds or throws an exception.
-                        System.out.println("Trying to Connect");
                         mmSocket.connect();
-                        System.out.println("Connected");
                     } catch (IOException connectException) {
                         // Unable to connect; close the socket and return.
                         try {
-                            System.out.println("Closing Socket... Failed to Connect");
                             mmSocket.close();
-                            System.out.println("Socket Closed");
                         } catch (IOException closeException) {
                             Log.e(TAG, "Could not close the client socket", closeException);
                         }
