@@ -1,20 +1,29 @@
 package com.senior_design.pal_device;
 
+
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.location.Location;
+
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.support.annotation.NonNull;
@@ -23,7 +32,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -38,14 +46,13 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
-//import java.time.LocalDateTime;
-//import java.time.format.DateTimeFormatter;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -53,8 +60,6 @@ public class recording_data extends AppCompatActivity {
     Button returnHome, record;
     Boolean buttonPressed;
     TextView title;
-    HashMap<String, String> data_DB;
-    HashMap<String,String>  push_data_DB;
     HashMap<String, Statistic_DB> stats_DB;
     HashMap<String, Patient_DB> patients_DB;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -66,15 +71,26 @@ public class recording_data extends AppCompatActivity {
     private static final String LOG_TAG = "Record_Log";
 
 
-
     //Bluetooth Stuff
-    BluetoothAdapter mBluetoothAdapter;
+    private BluetoothAdapter mBluetoothAdapter;
+    //final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
     int REQUEST_ENABLE_BT = 1;
-    private UUID PAL_UUID;
-    private BluetoothDevice foundDevice;
-    final int REQUEST_FINE_LOCATION_PERMISSIONS = 2;
-    final int ACCESS_COARSE_LOCATION_PERMISSIONS = 3;
-    private BluetoothService  mService = null;
+    private ScanSettings settings;
+    BluetoothLeScanner scanner;
+    private static final long SCAN_PERIOD = 10000;
+    private Handler mHandler;
+    private List<ScanFilter> filters;
+    private BluetoothGatt mGatt;
+
+    //Parsing Data Stuff
+    int timesBelowThreshold = 0;
+    int timesAboveThreshold = 0;
+    boolean playingMusic = false;
+    final int timeBelow = 5000;
+    int minThreshold = 2;
+    int timeBeforePlay = 1000;
+    final MediaPlayer mPlayer = new MediaPlayer();
+    HashMap<String, Data_DB> data_DBref = new HashMap<String,Data_DB>();
 
     File localFile;
     StorageReference mStorage;
@@ -100,46 +116,25 @@ public class recording_data extends AppCompatActivity {
         accountUser = bundle.getString("user");
         roundCounter = 0;
 
+        mHandler = new Handler();
 
 
         //PAL_UUID = UUID.fromString(tempUID);
 
         //Initializes Bluetooth Adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            // Device doesn't support Bluetooth
-            //Throwing an error message
-            AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(recording_data.this);
-            dlgAlert.setMessage("This device does not support Bluetooth. Please get a new device and try again.");
-            dlgAlert.setTitle("Bluetooth Error");
-            dlgAlert.setPositiveButton("OK", null);
-            dlgAlert.setCancelable(true);
-            dlgAlert.create().show();
-
-            dlgAlert.setPositiveButton("Ok",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(recording_data.this, music_therapist_home.class);
-                            Bundle bundle = new Bundle();
-                            bundle.putString("user", accountUser);
-                            intent.putExtras(bundle);
-                            startActivity(intent);
-                        }
-                    });
-
+        // Ensures Bluetooth is available on the device and it is enabled. If not,
+        // displays a dialog requesting user permission to enable Bluetooth.
+        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
 
-        if(mBluetoothAdapter.getScanMode()!= BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE){
-            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            startActivity(discoverableIntent);
-        }
-
-        record.setOnClickListener(new View.OnClickListener(){
+        record.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
-                if(buttonPressed == false){
+            public void onClick(View v) {
+                if (buttonPressed == false) {
 
                     title.setText("PAL is Starting Up");
                     returnHome.setVisibility(View.GONE);
@@ -148,7 +143,7 @@ public class recording_data extends AppCompatActivity {
                     //First time the button is pressed
                     //Download the lullaby
                     buttonPressed = true;
-                    String lullabyLocation =  songRet;
+                    String lullabyLocation = songRet;
                     mStorage = FirebaseStorage.getInstance().getReferenceFromUrl(lullabyLocation);
                     try {
                         localFile = load_file();
@@ -179,51 +174,19 @@ public class recording_data extends AppCompatActivity {
                     //Change the text of the button and remove the "Return Home" button
                     title.setText("PAL is Recording");
                     returnHome.setVisibility(View.GONE);
-                    record.setText("Stop Recording");
+                    record.setVisibility(View.GONE);
 
 
-                    //Enables the Bluetooth
-                    if (!mBluetoothAdapter.isEnabled()) {
-                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                    }
+                    //Scan for BLE Devices
+                    scanner = mBluetoothAdapter.getBluetoothLeScanner();
+                    settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
+                    filters = new ArrayList<ScanFilter>();
+                    scanLeDevice(true);
 
-
-                    // ActivityCompat.requestPermissions(recording_data.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    //  REQUEST_FINE_LOCATION_PERMISSIONS);
-                    ActivityCompat.requestPermissions(recording_data.this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
-                            ACCESS_COARSE_LOCATION_PERMISSIONS);
+                    createNewDataDBEntry(data_DBref);
 
 
 
-
-
-                    //Prelimitary Data
-                    //DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                    //LocalDateTime now = LocalDateTime.now();
-                    //String date = dtf.format(now);
-
-                    //String graphPath = "null";
-
-                    //Record data and send it to server
-
-
-
-
-                }
-                if(buttonPressed == true){
-                    //Second time the button is pressed ==> Move to the next page
-                    //Change the text of the button and remove the "Return Home" button
-                    title.setText("PAL is Recording");
-                    returnHome.setVisibility(View.GONE);
-                    record.setText("Stop Recording");
-
-                    //Disconnect from the Bluetooth
-
-
-                    //Move to the third page of the sequence
-                    // Intent intent = new Intent(recording_data.this, completeRecording.class);
-                    //startActivity(intent);
                 }
             }
         });
@@ -253,36 +216,11 @@ public class recording_data extends AppCompatActivity {
                 String status = (String) dataSnapshot.child("Status").getValue();
                 String released = (String) dataSnapshot.child("ReleasedToParent").getValue();
 
-                data_DB = new HashMap<String, String>();
-                ChildEventListener childEventListener = myRef.child("Statistics").child(patientID).child(round).child("Data").addChildEventListener(new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(DataSnapshot dataSnapshot1, String prevChildKey1){
-                        String time = (String) dataSnapshot1.getKey();
-                        String pressure = (String) dataSnapshot1.child(time).getValue();
-
-                        data_DB.put(time, pressure);
-                    }
-
-                    @Override
-                    public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
-                    }
-
-                    @Override
-                    public void onChildRemoved(DataSnapshot dataSnapshot) {
-                    }
-
-                    @Override
-                    public void onChildMoved(DataSnapshot dataSnapshot, String prevChildKey) {
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
+                Map<String,Data_DB> data_db = (Map<String,Data_DB>)dataSnapshot.child("Data").getValue();
 
 
 
-                Statistic_DB stat = new Statistic_DB(date, graph, palID, patient, round, data_DB, status, released );
+                Statistic_DB stat = new Statistic_DB(date, graph, palID, patient, round, data_db, status, released);
                 stats_DB.put(round, stat);
                 roundCounter++;
             }
@@ -319,11 +257,11 @@ public class recording_data extends AppCompatActivity {
                 String parentAccount = (String) dataSnapshot.child("ParentAccount").getValue();
                 String musicTherapist = (String) dataSnapshot.child("musicTherapist").getValue();
                 String doctor = (String) dataSnapshot.child("Doctor").getValue();
-                Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded,  palID,  parentAccountCreated, parentAccount, musicTherapist, doctor);
+                Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded, palID, parentAccountCreated, parentAccount, musicTherapist, doctor);
 
                 patients_DB.put(hospitalID, patient_db);
 
-                if(patient_db.hospitalID.equals(patientID)){
+                if (patient_db.hospitalID.equals(patientID)) {
                     selectedPatient = patient_db;
                 }
 
@@ -349,10 +287,10 @@ public class recording_data extends AppCompatActivity {
         ChildEventListener childEventListener2 = myRef.child("Lullaby").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-                if(dataSnapshot.getKey().equals(selectedPatient.hospitalID) && selectedPatient.lullabyRecorded.equals("Yes")) {
+                if (dataSnapshot.getKey().equals(selectedPatient.hospitalID) && selectedPatient.lullabyRecorded.equals("Yes")) {
                     songRet = (String) dataSnapshot.child("path").getValue();
                 }
-                if(dataSnapshot.getKey().equals("default") && selectedPatient.lullabyRecorded.equals("No")){
+                if (dataSnapshot.getKey().equals("default") && selectedPatient.lullabyRecorded.equals("No")) {
 
                     songRet = (String) dataSnapshot.child("path").getValue();
                 }
@@ -379,44 +317,15 @@ public class recording_data extends AppCompatActivity {
     }
 
 
-    public File load_file() throws IOException{
+    public File load_file() throws IOException {
         return File.createTempFile("lullaby", ".m4a");
     }
 
 
-
-
     //Bluetooth Methods
 
-    // Create a BroadcastReceiver for ACTION_FOUND.
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Discovery has found a device. Get the BluetoothDevice
-                // object and its info from the Intent.
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
 
-                System.out.println("*******************************");
-                System.out.println("deviceName: " + deviceName);
-                System.out.println("MAC Address: " + deviceHardwareAddress);
-                if(deviceName !=  null) {
-                    if (deviceName.equals("Pressure Sensor")) {
-                        BluetoothDevice device1 = mBluetoothAdapter.getRemoteDevice(deviceHardwareAddress);
-                        System.out.println("Remote Device: " + device1);
-                        BluetoothService fragment = new BluetoothService(mHandler, device1);
-                        fragment.start();
-                        push_data_DB = fragment.getPALData(localFile, mStorage);
-                        createNewDataDBEntry(push_data_DB);
-                    }
-                }
-            }
-        }
-    };
-
-    public void createNewDataDBEntry(HashMap<String,String> data){
+    public void createNewDataDBEntry(Map<String, Data_DB> data) {
         SimpleDateFormat dtf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         Date now = new Date();
         String date = dtf.format(now);
@@ -427,7 +336,7 @@ public class recording_data extends AppCompatActivity {
         String status = "Average";
         String released = "No";
 
-        Statistic_DB stat = new Statistic_DB(date, graph, paltemp, patient, round, data, status, released );
+        Statistic_DB stat = new Statistic_DB(date, graph, paltemp, patient, round, data, status, released);
         stats_DB.put(round, stat);
 
         //Go to Next page
@@ -443,63 +352,218 @@ public class recording_data extends AppCompatActivity {
         return above;
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Don't forget to unregister the ACTION_FOUND receiver.
-        unregisterReceiver(mReceiver);
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_FINE_LOCATION_PERMISSIONS: {
-                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    return;
+    private void scanLeDevice(final boolean enable) {
+        if (enable) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (Build.VERSION.SDK_INT < 21) {
+                        scanner.stopScan(mScanCallback);
+                    } else {
+                        scanner.stopScan(mScanCallback);
+
+                    }
                 }
-                break;
+            }, SCAN_PERIOD);
+            if (Build.VERSION.SDK_INT < 21) {
+                scanner.startScan(mScanCallback);
+            } else {
+
+                scanner.startScan(filters, settings, mScanCallback);
             }
-            case ACCESS_COARSE_LOCATION_PERMISSIONS: {
-                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mBluetoothAdapter.startDiscovery();
-                    IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                    registerReceiver(mReceiver, filter);
-                }
-                break;
+        } else {
+            if (Build.VERSION.SDK_INT < 21) {
+                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            } else {
+                scanner.stopScan(mScanCallback);
             }
         }
     }
 
-
-    /**
-     * The Handler that gets information back from the BluetoothChatService
-     */
-    private static Handler mHandler = new Handler() {
+    private ScanCallback mScanCallback = new ScanCallback() {
         @Override
-        public  void handleMessage(Message msg) {
-            switch (msg.what) {
-                case Constants.MESSAGE_STATE_CHANGE:
-                    switch (msg.arg1) {
-                        case BluetoothService.STATE_CONNECTED:
-                            System.out.println("STATE_Connected");
-                            break;
-                        case BluetoothService.STATE_CONNECTING:
-                            break;
-                        case BluetoothService.STATE_LISTEN:
-                        case BluetoothService.STATE_NONE:
-                            break;
-                    }
-                    break;
-                case Constants.MESSAGE_WRITE:
-                case Constants.MESSAGE_READ:
-                    byte[] readBuf = (byte[]) msg.obj;
-                    // construct a string from the valid bytes in the buffer
-                    String readMessage = new String(readBuf, 0, msg.arg1);
+        public void onScanResult(int callbackType, ScanResult result) {
+            Log.i("callbackType", String.valueOf(callbackType));
+            Log.i("result", result.toString());
+            BluetoothDevice btDevice = result.getDevice();
 
-                    break;
+            if(btDevice.getName() != null){
+                if(btDevice.getName().equals("Pressure Sensor")){
+                    connectToDevice(btDevice);
+                }
             }
+        }
+
+        @Override
+        public void onBatchScanResults(List<ScanResult> results) {
+            for (ScanResult sr : results) {
+                Log.i("ScanResult - Results", sr.toString());
+            }
+        }
+
+        @Override
+        public void onScanFailed(int errorCode) {
+            Log.e("Scan Failed", "Error Code: " + errorCode);
         }
     };
+
+    private BluetoothAdapter.LeScanCallback mLeScanCallback =
+            new BluetoothAdapter.LeScanCallback() {
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi,
+                                     byte[] scanRecord) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.i("onLeScan", device.toString());
+
+                            connectToDevice(device);
+                        }
+                    });
+                }
+            };
+
+    public void connectToDevice(BluetoothDevice device) {
+        if (mGatt == null) {
+            mGatt = device.connectGatt(this, false, gattCallback);
+            System.out.println("SARAH: " + mGatt);
+            scanLeDevice(false);// will stop after first device detection
+        }
+    }
+
+    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            Log.i("onConnectionStateChange", "Status: " + status);
+            switch (newState) {
+                case BluetoothProfile.STATE_CONNECTED:
+                    Log.i("gattCallback", "STATE_CONNECTED");
+                    gatt.discoverServices();
+                    break;
+                case BluetoothProfile.STATE_DISCONNECTED:
+                    Log.e("gattCallback", "STATE_DISCONNECTED");
+                    break;
+                default:
+                    Log.e("gattCallback", "STATE_OTHER");
+            }
+
+        }
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            List<BluetoothGattService> services = gatt.getServices();
+            System.out.println("SARAH services Discovered!!!!");
+            System.out.println("SARAH services: " + services.toString());
+            //Service #2 is the pressure sensor
+            System.out.println("SARAH 2 " + services.get(2).getUuid());
+
+
+            BluetoothGattService service = services.get(2);
+            BluetoothGattCharacteristic myGatChar = services.get(2).getCharacteristics().get(0);
+            System.out.println("SARAH CHARACTERISTICS 2: " + myGatChar);
+            List<BluetoothGattDescriptor> descriptors = myGatChar.getDescriptors();
+            System.out.println("SARAH DESCRIPTORS: " + descriptors);
+            boolean set = gatt.setCharacteristicNotification(myGatChar,true);
+            BluetoothGattDescriptor descriptor = myGatChar.getDescriptor(descriptors.get(0).getUuid());
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            gatt.writeDescriptor(descriptor);
+
+            //15 minutes is 900000 milliseconds
+            //30 seconds is 30000
+            //5 seconds is 5000 milliseconds
+            //1 second is 1000 milliseconds
+            long startTime = System.currentTimeMillis();
+            while(System.currentTimeMillis()-startTime < 30000) {
+
+            }
+            gatt.disconnect();
+            if(gatt == null){
+                return;
+            }
+            gatt.close();
+            gatt = null;
+        }
+
+        @Override
+        public void onCharacteristicChanged (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic){
+            System.out.println("SARAH Data avaliable ");
+            byte[] val1 = characteristic.getValue();
+            int i = unsignedShortToInt(val1);
+            System.out.println("SARAH VALUE: " + i);
+
+            parseInfo(i);
+
+        }
+
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+               System.out.println("SARAH Data avaliable ");
+               byte[] val1 = characteristic.getValue();
+               System.out.println(val1.length);
+               int i = val1[1];
+               int j = val1[0];
+               System.out.println("SARAH VALUE: " + j + " " + i);
+               }
+            }
+
+    };
+
+    public static final int unsignedShortToInt(byte[] b) {
+        int i = 0;
+        i |= b[0] & 0xFF;
+        i <<= 8;
+        i |= b[1] & 0xFF;
+        return i;
+    }
+
+    public void parseInfo(int input){
+        if(input > minThreshold && playingMusic == false && timesAboveThreshold > timeBeforePlay){
+            mStorage.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    try {
+                        mPlayer.setDataSource(localFile.getAbsolutePath());
+                        mPlayer.prepare();
+                        mPlayer.start();
+                    } catch (IOException e) {
+                        System.out.println("prepare() failed");
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    System.out.println("Song was not loaded");
+                }
+            });
+            playingMusic = true;
+        }
+
+        //Increments the timesAboveThreshold
+        //Ensures that we don't play the music for outlining data
+        if(input > minThreshold ){
+            timesAboveThreshold++;
+        }
+
+
+        //input from sensor is below our minThreshold
+        //Ensures that we don't stop the music for outlining data
+        if(input < minThreshold && timesBelowThreshold < timeBelow){
+            timesBelowThreshold++;
+        }
+
+        //Please don't stop the music
+        if(playingMusic == true && timesBelowThreshold > timeBelow && input < minThreshold){
+            mPlayer.stop();
+        }
+
+        //Push data to hashmap to be pushed to the server
+        Data_DB temp = new Data_DB(Integer.toString(input));
+        data_DBref.put(Long.toString(System.currentTimeMillis()), temp);
+        System.out.println(Long.toString(System.currentTimeMillis()) + "     " + Integer.toString(input));
+
+    }
 
 
 }

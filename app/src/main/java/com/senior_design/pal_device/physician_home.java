@@ -8,6 +8,7 @@ import android.widget.Button;
 
 public class physician_home extends AppCompatActivity {
     Button statistic, help, logout;
+    String accountUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -17,10 +18,30 @@ public class physician_home extends AppCompatActivity {
         help = (Button) findViewById(R.id.button2);
         logout = (Button) findViewById(R.id.button1);
 
+        Bundle bundle = getIntent().getExtras();
+
+        accountUser = bundle.getString("user");
+
+        statistic.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Intent intent = new Intent(physician_home.this, viewStatistics1.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                bundle.putString("type", "Doctor");
+                intent.putExtras(bundle);
+                startActivity(intent);
+
+            }
+        });
+
         help.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(physician_home.this, physician_help.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });

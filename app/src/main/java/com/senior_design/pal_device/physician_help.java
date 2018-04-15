@@ -8,10 +8,15 @@ import android.widget.Button;
 
 public class physician_help extends AppCompatActivity {
     Button returnHome;
+    String accountUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_physician_help);
+
+        Bundle bundle = getIntent().getExtras();
+
+        accountUser = bundle.getString("user");
 
         returnHome = (Button) findViewById(R.id.button8);
 
@@ -19,6 +24,9 @@ public class physician_help extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(physician_help.this, physician_home.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });

@@ -1,13 +1,10 @@
 package com.senior_design.pal_device;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -21,11 +18,13 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public class confirm_release extends AppCompatActivity {
-    Button home, select;
+public class viewStatistics3 extends AppCompatActivity {
+    Button home;
     ListView list;
     public HashMap<String, Patient_DB> patients_DB;
     public HashMap<String, Statistic_DB> statistic_DB;
@@ -33,92 +32,68 @@ public class confirm_release extends AppCompatActivity {
     List<String> itemList;
     String accountUser;
     String patient;
-    String stat,round;
+    String inputRound, type;
     Patient_DB selectedPatient;
-    TextView patName, patHospID;
-
+    TextView patNametxt, patHospIDtxt, roundtxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_confirm_release);
+        setContentView(R.layout.activity_view_statistics3);
 
         home = (Button) findViewById(R.id.home);
-        select = (Button) findViewById(R.id.select);
         list = (ListView) findViewById(R.id.listView);
-        patName = (TextView) findViewById(R.id.name);
-        patHospID = (TextView) findViewById(R.id.hosid);
+        patNametxt = (TextView) findViewById(R.id.name);
+        patHospIDtxt = (TextView) findViewById(R.id.hosid);
+        roundtxt = (TextView) findViewById(R.id.round);
 
         itemList = new ArrayList<String>();
 
         patients_DB = new HashMap<String, Patient_DB>();
+        statistic_DB = new HashMap<String,Statistic_DB>();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference myRef = database.getReference();
 
-        Bundle bundle = getIntent().getExtras();
+        final Bundle bundle = getIntent().getExtras();
         accountUser = bundle.getString("user");
         patient = bundle.getString("patient");
+        inputRound = bundle.getString("round");
+        type = bundle.getString("type");
+
+        adapter = new ArrayAdapter<String>(viewStatistics3.this, android.R.layout.simple_list_item_1, itemList);
+        list.setAdapter(adapter);
+
+
+        roundtxt.setText("Round: " + inputRound);
+        roundtxt.setTextColor(Color.WHITE);
 
         selectedPatient = patients_DB.get(patient);
 
-
-        adapter = new ArrayAdapter<String>(confirm_release.this, android.R.layout.simple_list_item_1, itemList);
-        list.setAdapter(adapter);
-
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedItem = (String) list.getItemAtPosition(position);
-                String[] lines = selectedItem.split("\\r?\\n");
-                round = lines[0];
-                round = round.replace("Round: ", "");
-                stat = lines[1];
-                stat = stat.replace("Status: ", "");
-
-            }
-        });
-
-        select.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (stat != null) {
-                    myRef.child("Patient").child(patient).child("CurrentStatus").setValue(stat);
-                    myRef.child("Statistics").child(patient).child(round).child("ReleasedToParent").setValue("Yes");
-
-                    Intent intent = new Intent(confirm_release.this, music_therapist_home.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putString("user", accountUser);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
-                } else {
-                    AlertDialog.Builder dlgAlert = new AlertDialog.Builder(confirm_release.this);
-                    dlgAlert.setMessage("You must select a statistic in order to release it.");
-                    dlgAlert.setTitle("No Selection Made");
-                    dlgAlert.setPositiveButton("OK", null);
-                    dlgAlert.setCancelable(true);
-                    dlgAlert.create().show();
-
-                    dlgAlert.setPositiveButton("Ok",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                }
-                            });
-                }
-            }
-        });
 
 
         home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(confirm_release.this, music_therapist_home.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("user", accountUser);
-                intent.putExtras(bundle);
-                startActivity(intent);
+                if(type.equals("Music Therapist")) {
+                    Intent intent = new Intent(viewStatistics3.this, music_therapist_home.class);
+                    Bundle bundle1 = new Bundle();
+                    bundle1.putString("user", accountUser);
+                    bundle1.putString("type","Music Therapist");
+                    intent.putExtras(bundle1);
+                    startActivity(intent);
+                }
+                if(type.equals("Doctor")){
+                    Intent intent = new Intent(viewStatistics3.this, physician_home.class);
+                    Bundle bundle1 = new Bundle();
+                    bundle1.putString("user", accountUser);
+                    bundle1.putString("type","Doctor");
+                    intent.putExtras(bundle1);
+                    startActivity(intent);
+                }
             }
         });
+
+
 
         ChildEventListener childEventListener = myRef.child("Patient").addChildEventListener(new ChildEventListener() {
 
@@ -135,15 +110,15 @@ public class confirm_release extends AppCompatActivity {
                 String parentAccount = (String) dataSnapshot.child("ParentAccount").getValue();
                 String musicTherapist = (String) dataSnapshot.child("musicTherapist").getValue();
                 String doctor = (String) dataSnapshot.child("Doctor").getValue();
-                Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded, palID, parentAccountCreated, parentAccount, musicTherapist, doctor);
+                Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded,  palID,  parentAccountCreated, parentAccount, musicTherapist, doctor);
                 patients_DB.put(hospitalID, patient_db);
 
-                if (patient_db.hospitalID.equals(patient)) {
-                    patName.setText(patient_db.fname + " " + patient_db.lname);
-                    patName.setTextColor(Color.WHITE);
+                if(patient_db.hospitalID.equals(patient)){
+                    patNametxt.setText(patient_db.fname + " " + patient_db.lname);
+                    patNametxt.setTextColor(Color.WHITE);
 
-                    patHospID.setText(patient_db.hospitalID);
-                    patHospID.setTextColor(Color.WHITE);
+                    patHospIDtxt.setText(patient_db.hospitalID);
+                    patHospIDtxt.setTextColor(Color.WHITE);
                 }
 
             }
@@ -173,19 +148,28 @@ public class confirm_release extends AppCompatActivity {
                 String graph = (String) dataSnapshot.child("Graph").getValue();
                 String palID = (String) dataSnapshot.child("PalID").getValue();
                 String inpatient = (String) dataSnapshot.child("PatientID").getValue();
-                final String round = (String) dataSnapshot.child("Round").getValue();
+                final String round =(String) dataSnapshot.child("Round").getValue();
                 String status = (String) dataSnapshot.child("Result").getValue();
                 String released = (String) dataSnapshot.child("ReleasedToParent").getValue();
-                Map<String, Data_DB> data_db = (Map<String, Data_DB>) dataSnapshot.child("Data").getValue();
+                Map<String,Data_DB> data_db = (Map<String,Data_DB>)dataSnapshot.child("Data").getValue();
 
                 System.out.println("SARAH: " + data_db.toString());
 
                 Statistic_DB stats = new Statistic_DB(date, graph, palID, inpatient, round, data_db, status, released);
 
-                if (stats.released.equals("No")) {
-                    String temp = "Round: " + stats.round + "\nStatus: " + stats.status;
-                    adapter.add(temp);
+                if(round.equals(inputRound)) {
+                    Set temp = data_db.entrySet();
+                    Iterator iter = temp.iterator();
+
+                    while (iter.hasNext()) {
+                        Map.Entry entry = (Map.Entry) iter.next();
+                        String in = "Time: " + entry.getKey() + "\nValue: " + entry.getValue();
+                        System.out.println("SARAH: " + in);
+                        adapter.add(in);
+                        System.out.println("SARAH: " + entry.getKey() + " -- " + entry.getValue());
+                    }
                 }
+
             }
 
             @Override
@@ -204,6 +188,5 @@ public class confirm_release extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-
     }
 }

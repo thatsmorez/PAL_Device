@@ -42,6 +42,18 @@ public class music_therapist_home extends AppCompatActivity {
             }
         });
 
+        statistic.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Intent intent = new Intent (music_therapist_home.this, viewStatistics1.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("user", accountUser);
+                bundle.putString("type", "Music Therapist");
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
+
         create_account.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){

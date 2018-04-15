@@ -89,17 +89,8 @@ public class parent_home extends AppCompatActivity {
                 Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded,  palID,  parentAccountCreated, parentAccount,musicTherapist,doctor);
                 patients_DB.put(hospitalID, patient_db);
 
-                System.out.println("**************************");
-                System.out.println(patient_db.parentAccount);
-                System.out.println(accountUser);
-
                 if(patient_db.parentAccount.equals(accountUser)) {
                     patient = patient_db;
-
-                    System.out.println("**************************");
-                    System.out.println("here");
-                    System.out.println("**************************");
-
                 }
             }
 

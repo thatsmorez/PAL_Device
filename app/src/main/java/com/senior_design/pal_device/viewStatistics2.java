@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class confirm_release extends AppCompatActivity {
+public class viewStatistics2 extends AppCompatActivity {
     Button home, select;
     ListView list;
     public HashMap<String, Patient_DB> patients_DB;
@@ -33,7 +33,7 @@ public class confirm_release extends AppCompatActivity {
     List<String> itemList;
     String accountUser;
     String patient;
-    String stat,round;
+    String stat,round, type;
     Patient_DB selectedPatient;
     TextView patName, patHospID;
 
@@ -41,7 +41,7 @@ public class confirm_release extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_confirm_release);
+        setContentView(R.layout.activity_view_statistics2);
 
         home = (Button) findViewById(R.id.home);
         select = (Button) findViewById(R.id.select);
@@ -52,17 +52,20 @@ public class confirm_release extends AppCompatActivity {
         itemList = new ArrayList<String>();
 
         patients_DB = new HashMap<String, Patient_DB>();
+        statistic_DB = new HashMap<String,Statistic_DB>();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference myRef = database.getReference();
 
         Bundle bundle = getIntent().getExtras();
         accountUser = bundle.getString("user");
         patient = bundle.getString("patient");
+        type = bundle.getString("type");
 
         selectedPatient = patients_DB.get(patient);
 
 
-        adapter = new ArrayAdapter<String>(confirm_release.this, android.R.layout.simple_list_item_1, itemList);
+
+        adapter = new ArrayAdapter<String>(viewStatistics2.this, android.R.layout.simple_list_item_1, itemList);
         list.setAdapter(adapter);
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -81,18 +84,19 @@ public class confirm_release extends AppCompatActivity {
         select.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (stat != null) {
-                    myRef.child("Patient").child(patient).child("CurrentStatus").setValue(stat);
-                    myRef.child("Statistics").child(patient).child(round).child("ReleasedToParent").setValue("Yes");
+                if(stat != null) {
 
-                    Intent intent = new Intent(confirm_release.this, music_therapist_home.class);
+                    Intent intent = new Intent(viewStatistics2.this, viewStatistics3.class);
                     Bundle bundle = new Bundle();
                     bundle.putString("user", accountUser);
+                    bundle.putString("patient", patient);
+                    bundle.putString("round", round);
+                    bundle.putString("type", type);
                     intent.putExtras(bundle);
                     startActivity(intent);
                 } else {
-                    AlertDialog.Builder dlgAlert = new AlertDialog.Builder(confirm_release.this);
-                    dlgAlert.setMessage("You must select a statistic in order to release it.");
+                    AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(viewStatistics2.this);
+                    dlgAlert.setMessage("You must select a round in order to view the statistics.");
                     dlgAlert.setTitle("No Selection Made");
                     dlgAlert.setPositiveButton("OK", null);
                     dlgAlert.setCancelable(true);
@@ -109,14 +113,29 @@ public class confirm_release extends AppCompatActivity {
         });
 
 
+
+
+
+
         home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(confirm_release.this, music_therapist_home.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("user", accountUser);
-                intent.putExtras(bundle);
-                startActivity(intent);
+                if(type.equals("Music Therapist")) {
+                    Intent intent = new Intent(viewStatistics2.this, music_therapist_home.class);
+                    Bundle bundle1 = new Bundle();
+                    bundle1.putString("user", accountUser);
+                    bundle1.putString("type","Music Therapist");
+                    intent.putExtras(bundle1);
+                    startActivity(intent);
+                }
+                if(type.equals("Doctor")){
+                    Intent intent = new Intent(viewStatistics2.this, physician_home.class);
+                    Bundle bundle1 = new Bundle();
+                    bundle1.putString("user", accountUser);
+                    bundle1.putString("type","Doctor");
+                    intent.putExtras(bundle1);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -135,10 +154,10 @@ public class confirm_release extends AppCompatActivity {
                 String parentAccount = (String) dataSnapshot.child("ParentAccount").getValue();
                 String musicTherapist = (String) dataSnapshot.child("musicTherapist").getValue();
                 String doctor = (String) dataSnapshot.child("Doctor").getValue();
-                Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded, palID, parentAccountCreated, parentAccount, musicTherapist, doctor);
+                Patient_DB patient_db = new Patient_DB(currentStatus, fname, hospitalID, lname, lullabyRecorded,  palID,  parentAccountCreated, parentAccount, musicTherapist, doctor);
                 patients_DB.put(hospitalID, patient_db);
 
-                if (patient_db.hospitalID.equals(patient)) {
+                if(patient_db.hospitalID.equals(patient)){
                     patName.setText(patient_db.fname + " " + patient_db.lname);
                     patName.setTextColor(Color.WHITE);
 
@@ -173,19 +192,18 @@ public class confirm_release extends AppCompatActivity {
                 String graph = (String) dataSnapshot.child("Graph").getValue();
                 String palID = (String) dataSnapshot.child("PalID").getValue();
                 String inpatient = (String) dataSnapshot.child("PatientID").getValue();
-                final String round = (String) dataSnapshot.child("Round").getValue();
+                String round =(String) dataSnapshot.child("Round").getValue();
                 String status = (String) dataSnapshot.child("Result").getValue();
                 String released = (String) dataSnapshot.child("ReleasedToParent").getValue();
-                Map<String, Data_DB> data_db = (Map<String, Data_DB>) dataSnapshot.child("Data").getValue();
-
-                System.out.println("SARAH: " + data_db.toString());
+                Map<String,Data_DB> data_db = (Map<String,Data_DB>)dataSnapshot.child("Data").getValue();
 
                 Statistic_DB stats = new Statistic_DB(date, graph, palID, inpatient, round, data_db, status, released);
 
-                if (stats.released.equals("No")) {
                     String temp = "Round: " + stats.round + "\nStatus: " + stats.status;
                     adapter.add(temp);
-                }
+
+
+
             }
 
             @Override
@@ -204,6 +222,5 @@ public class confirm_release extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-
     }
 }

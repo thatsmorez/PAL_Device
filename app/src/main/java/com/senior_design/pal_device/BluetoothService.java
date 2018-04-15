@@ -122,11 +122,11 @@ public class BluetoothService {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                         try {
-                          mPlayer.setDataSource(musicFile.getAbsolutePath());
-                          mPlayer.prepare();
-                          mPlayer.start();
+                            mPlayer.setDataSource(musicFile.getAbsolutePath());
+                            mPlayer.prepare();
+                            mPlayer.start();
                         } catch (IOException e) {
-                          System.out.println("prepare() failed");
+                            System.out.println("prepare() failed");
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -293,20 +293,20 @@ public class BluetoothService {
 
             // Keep listening to the InputStream while connected
             //while (mState == STATE_CONNECTED) {
-                try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
+            try {
+                // Read from the InputStream
+                bytes = mmInStream.read(buffer);
 
-                    // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget();
-                    return bytes;
-                } catch (IOException e) {
-                    Log.e(TAG, "disconnected", e);
-                    connectionLost();
-                    return bytes;
-                    //break;
-                }
+                // Send the obtained bytes to the UI Activity
+                mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
+                        .sendToTarget();
+                return bytes;
+            } catch (IOException e) {
+                Log.e(TAG, "disconnected", e);
+                connectionLost();
+                return bytes;
+                //break;
+            }
             //}
         }
 
@@ -353,14 +353,14 @@ public class BluetoothService {
             BluetoothSocket tmp = null;
             mmDevice = device;
 
-                // Get a BluetoothSocket to connect with the given BluetoothDevice.
-                // MY_UUID is the app's UUID string, also used in the server code.
-                try {
-                    pairDevice(device);
-                    tmp = createBluetoothSocket(device);
-                } catch (Exception e) {
-                    Log.e(TAG, "Could not create Insecure RFComm Connection", e);
-                }
+            // Get a BluetoothSocket to connect with the given BluetoothDevice.
+            // MY_UUID is the app's UUID string, also used in the server code.
+            try {
+                pairDevice(device);
+                tmp = createBluetoothSocket(device);
+            } catch (Exception e) {
+                Log.e(TAG, "Could not create Insecure RFComm Connection", e);
+            }
             mmSocket = tmp;
             System.out.println("mmSocket Name: "+ mmSocket.getConnectionType());
             System.out.println("mmSocket Remote: " + mmSocket.getRemoteDevice().getName());
@@ -388,37 +388,39 @@ public class BluetoothService {
             return  device.createRfcommSocketToServiceRecord(MY_UUID_SECURE);
         }
 
-            public void run() {
+        public void run() {
             // Cancel discovery because it otherwise slows down the connection.
-                mAdapter.cancelDiscovery();
-                System.out.println(mmSocket);
-                    try {
-                        // Connect to the remote device through the socket. This call blocks
-                        // until it succeeds or throws an exception.
-                        mmSocket.connect();
-                    } catch (IOException connectException) {
-                        // Unable to connect; close the socket and return.
-                        try {
-                            mmSocket.close();
-                        } catch (IOException closeException) {
-                            Log.e(TAG, "Could not close the client socket", closeException);
-                        }
-                        return;
-                    }
-
-                    // The connection attempt succeeded. Perform work associated with
-                    // the connection in a separate thread.
-
+            mAdapter.cancelDiscovery();
+            System.out.println(mmSocket);
+            System.out.println("HERE");
+            try {
+                // Connect to the remote device through the socket. This call blocks
+                // until it succeeds or throws an exception.
+                mmSocket.connect();
+                System.out.println("MMsocket connected");
+            } catch (IOException connectException) {
+                // Unable to connect; close the socket and return.
+                try {
+                    mmSocket.close();
+                } catch (IOException closeException) {
+                    Log.e(TAG, "Could not close the client socket", closeException);
                 }
+                return;
+            }
 
-                // Closes the client socket and causes the thread to finish.
-                public void cancel() {
-                    try {
-                        mmSocket.close();
-                    } catch (IOException e) {
-                        Log.e(TAG, "Could not close the client socket", e);
-                    }
-                }
+            // The connection attempt succeeded. Perform work associated with
+            // the connection in a separate thread.
+
+        }
+
+        // Closes the client socket and causes the thread to finish.
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close the client socket", e);
+            }
+        }
     }
 
 
