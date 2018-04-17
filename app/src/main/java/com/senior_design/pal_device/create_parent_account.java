@@ -67,7 +67,7 @@ public class create_parent_account extends AppCompatActivity {
                 String e = email.getText().toString();
 
                     if(patients_DB.get(p) != null){
-                        if(patients_DB.get(p).hospitalID.equals(p.toString()) && patients_DB.get(p).parentAccountCreated.equals("No")){
+                        if(patients_DB.get(p).hospitalID.equals(p.toString()) && patients_DB.get(p).parentAccountCreated.equals("No")) {
                             //Generates a new password and displays it to the screen
                             String Capital_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                             String Small_chars = "abcdefghijklmnopqrstuvwxyz";
@@ -104,7 +104,7 @@ public class create_parent_account extends AppCompatActivity {
                             myRef.child("Patient").child(p).child("ParentAccount").setValue(finalUser);
 
                             //Displays password to screen for MT to give to parent
-                            AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(create_parent_account.this);
+                            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(create_parent_account.this);
                             dlgAlert.setMessage("Parent account has been successfully created. \n Username: " + finalUser + "\nPassward: " + finalPass);
                             dlgAlert.setTitle("Account Created");
                             dlgAlert.setPositiveButton("OK", null);
@@ -117,6 +117,7 @@ public class create_parent_account extends AppCompatActivity {
 
                                         }
                                     });
+                        
 
                             Intent intent = new Intent(create_parent_account.this, create_parent_account.class);
                             Bundle bundle = new Bundle();

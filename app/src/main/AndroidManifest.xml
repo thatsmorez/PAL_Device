@@ -45,7 +45,9 @@
         <activity android:name=".confirm_release" />
         <activity android:name=".viewStatistics1" />
         <activity android:name=".viewStatistics2" />
-        <activity android:name=".viewStatistics3"></activity>
+        <activity android:name=".viewStatistics3" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".how_patient_did"></activity>
     </application>
 
 </manifest>

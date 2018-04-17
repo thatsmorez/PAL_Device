@@ -182,8 +182,8 @@ public class confirm_release extends AppCompatActivity {
 
                 Statistic_DB stats = new Statistic_DB(date, graph, palID, inpatient, round, data_db, status, released);
 
-                if (stats.released.equals("No")) {
-                    String temp = "Round: " + stats.round + "\nStatus: " + stats.status;
+                if (stats.ReleasedToParent.equals("No")) {
+                    String temp = "Round: " + stats.Round + "\nStatus: " + stats.Result;
                     adapter.add(temp);
                 }
             }

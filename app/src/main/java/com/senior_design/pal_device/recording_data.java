@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.icu.util.Calendar;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
@@ -32,9 +33,15 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -47,6 +54,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,6 +77,7 @@ public class recording_data extends AppCompatActivity {
     int roundCounter;
     String songRet;
     private static final String LOG_TAG = "Record_Log";
+    long starttime;
 
 
     //Bluetooth Stuff
@@ -86,13 +95,15 @@ public class recording_data extends AppCompatActivity {
     int timesBelowThreshold = 0;
     int timesAboveThreshold = 0;
     boolean playingMusic = false;
-    final int timeBelow = 5000;
-    int minThreshold = 2;
-    int timeBeforePlay = 1000;
+    final int timeBelow = 60;
+    int minThreshold = 150;
     final MediaPlayer mPlayer = new MediaPlayer();
+    int timeBeforePlay = 300;
     HashMap<String, Data_DB> data_DBref = new HashMap<String,Data_DB>();
+    boolean firsttime = true;
 
     File localFile;
+    private FirebaseAuth mAuth;
     StorageReference mStorage;
 
     @Override
@@ -118,6 +129,22 @@ public class recording_data extends AppCompatActivity {
 
         mHandler = new Handler();
 
+        mAuth = FirebaseAuth.getInstance();
+        mAuth.signInAnonymously()
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            System.out.println("Sign in success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+
+                        } else {
+                            // If sign in fails, display a message to the user.
+                           System.out.println("Sign in failure");
+                        }
+                    }
+                });
 
         //PAL_UUID = UUID.fromString(tempUID);
 
@@ -146,25 +173,26 @@ public class recording_data extends AppCompatActivity {
                     String lullabyLocation = songRet;
                     mStorage = FirebaseStorage.getInstance().getReferenceFromUrl(lullabyLocation);
                     try {
-                        localFile = load_file();
-                        mStorage.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                MediaPlayer mPlayer = new MediaPlayer();
-                                //try {
-                                //  mPlayer.setDataSource(localFile.getAbsolutePath());
-                                // mPlayer.prepare();
-                                //mPlayer.start();
-                                //} catch (IOException e) {
-                                //   Log.e(LOG_TAG, "prepare() failed");
-                                //}
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception exception) {
-                                Log.e(LOG_TAG, "Song was not loaded");
-                            }
-                        });
+                            localFile = load_file();
+                            mStorage.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                    MediaPlayer mPlayer = new MediaPlayer();
+                                    try {
+                                      mPlayer.setDataSource(localFile.getAbsolutePath());
+                                      mPlayer.prepare();
+                                      mPlayer.setLooping(true);
+                                    //mPlayer.start();
+                                    } catch (IOException e) {
+                                       Log.e(LOG_TAG, "prepare() failed");
+                                    }
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    Log.e(LOG_TAG, "Song was not loaded");
+                                }
+                            });
 
                     } catch (IOException ie) {
                         Log.e(LOG_TAG, "Invalid location for lullaby");
@@ -182,10 +210,6 @@ public class recording_data extends AppCompatActivity {
                     settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
                     filters = new ArrayList<ScanFilter>();
                     scanLeDevice(true);
-
-                    createNewDataDBEntry(data_DBref);
-
-
 
                 }
             }
@@ -333,24 +357,26 @@ public class recording_data extends AppCompatActivity {
         String paltemp = palID;
         String patient = patientID;
         String round = Integer.toString(roundCounter + 1);
-        String status = "Average";
+        String status = "null";
         String released = "No";
 
         Statistic_DB stat = new Statistic_DB(date, graph, paltemp, patient, round, data, status, released);
-        stats_DB.put(round, stat);
 
-        //Go to Next page
+        DatabaseReference usersRef =  myRef.child("Statistics").child(patientID.toString()).child(round.toString());
+        usersRef.setValue(stat);
+
+        //Move to the next page
+        Intent intent = new Intent(recording_data.this, how_patient_did.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("user", accountUser);
+        bundle.putString("patient", patientID);
+        bundle.putString("round", Integer.toString(roundCounter + 1));
+        intent.putExtras(bundle);
+        startActivity(intent);
+
 
     }
 
-    public String determineStatus() {
-        String below = "Below Average";
-        String normal = "Average";
-        String above = "Above Average";
-
-
-        return above;
-    }
 
 
     private void scanLeDevice(final boolean enable) {
@@ -427,7 +453,6 @@ public class recording_data extends AppCompatActivity {
     public void connectToDevice(BluetoothDevice device) {
         if (mGatt == null) {
             mGatt = device.connectGatt(this, false, gattCallback);
-            System.out.println("SARAH: " + mGatt);
             scanLeDevice(false);// will stop after first device detection
         }
     }
@@ -452,62 +477,49 @@ public class recording_data extends AppCompatActivity {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             List<BluetoothGattService> services = gatt.getServices();
-            System.out.println("SARAH services Discovered!!!!");
-            System.out.println("SARAH services: " + services.toString());
-            //Service #2 is the pressure sensor
-            System.out.println("SARAH 2 " + services.get(2).getUuid());
-
 
             BluetoothGattService service = services.get(2);
             BluetoothGattCharacteristic myGatChar = services.get(2).getCharacteristics().get(0);
-            System.out.println("SARAH CHARACTERISTICS 2: " + myGatChar);
+
             List<BluetoothGattDescriptor> descriptors = myGatChar.getDescriptors();
-            System.out.println("SARAH DESCRIPTORS: " + descriptors);
+
             boolean set = gatt.setCharacteristicNotification(myGatChar,true);
             BluetoothGattDescriptor descriptor = myGatChar.getDescriptor(descriptors.get(0).getUuid());
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             gatt.writeDescriptor(descriptor);
 
-            //15 minutes is 900000 milliseconds
-            //30 seconds is 30000
-            //5 seconds is 5000 milliseconds
-            //1 second is 1000 milliseconds
-            long startTime = System.currentTimeMillis();
-            while(System.currentTimeMillis()-startTime < 30000) {
+            starttime = System.currentTimeMillis();
 
-            }
-            gatt.disconnect();
-            if(gatt == null){
-                return;
-            }
-            gatt.close();
-            gatt = null;
+
+            //gatt.disconnect();
+            //if(gatt == null){
+             //   return;
+            //}
+            //gatt.close();
+            //gatt = null;
         }
 
         @Override
         public void onCharacteristicChanged (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic){
-            System.out.println("SARAH Data avaliable ");
             byte[] val1 = characteristic.getValue();
             int i = unsignedShortToInt(val1);
-            System.out.println("SARAH VALUE: " + i);
 
             parseInfo(i);
-
-        }
-
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-               System.out.println("SARAH Data avaliable ");
-               byte[] val1 = characteristic.getValue();
-               System.out.println(val1.length);
-               int i = val1[1];
-               int j = val1[0];
-               System.out.println("SARAH VALUE: " + j + " " + i);
-               }
+            //15 minutes is 900000 milliseconds
+            //30 seconds is 30000
+            //5 seconds is 5000 milliseconds
+            //1 second is 1000 milliseconds
+            if(System.currentTimeMillis() - starttime > 30000){
+                gatt.disconnect();
+                if(gatt == null){
+                    return;
+                }
+                gatt.close();
+                gatt = null;
+                createNewDataDBEntry(data_DBref);
             }
 
+        }
     };
 
     public static final int unsignedShortToInt(byte[] b) {
@@ -520,49 +532,58 @@ public class recording_data extends AppCompatActivity {
 
     public void parseInfo(int input){
         if(input > minThreshold && playingMusic == false && timesAboveThreshold > timeBeforePlay){
-            mStorage.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    try {
-                        mPlayer.setDataSource(localFile.getAbsolutePath());
-                        mPlayer.prepare();
-                        mPlayer.start();
-                    } catch (IOException e) {
-                        System.out.println("prepare() failed");
-                    }
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    System.out.println("Song was not loaded");
-                }
-            });
             playingMusic = true;
+            if(firsttime) {
+                firsttime = false;
+                mStorage.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        try {
+                            mPlayer.setDataSource(localFile.getAbsolutePath());
+                            mPlayer.setLooping(true);
+                            mPlayer.prepare();
+                            mPlayer.start();
+                        } catch (IOException e) {
+                            System.out.println("prepare() failed");
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        System.out.println("Song was not loaded");
+                    }
+                });
+            }else {
+                mPlayer.start();
+            }
+
         }
 
         //Increments the timesAboveThreshold
         //Ensures that we don't play the music for outlining data
-        if(input > minThreshold ){
-            timesAboveThreshold++;
+        if(input >= minThreshold ){
+            timesBelowThreshold = 0;
+            timesAboveThreshold = timesAboveThreshold + 1 ;
         }
 
 
         //input from sensor is below our minThreshold
         //Ensures that we don't stop the music for outlining data
-        if(input < minThreshold && timesBelowThreshold < timeBelow){
+        if(input <= minThreshold ){
+            timesAboveThreshold = 0;
             timesBelowThreshold++;
         }
 
         //Please don't stop the music
         if(playingMusic == true && timesBelowThreshold > timeBelow && input < minThreshold){
-            mPlayer.stop();
+            mPlayer.pause();
+            playingMusic = false;
+            timesAboveThreshold = 0;
         }
 
         //Push data to hashmap to be pushed to the server
         Data_DB temp = new Data_DB(Integer.toString(input));
-        data_DBref.put(Long.toString(System.currentTimeMillis()), temp);
-        System.out.println(Long.toString(System.currentTimeMillis()) + "     " + Integer.toString(input));
-
+        data_DBref.put(DateFormat.getDateTimeInstance().format(new Date()), temp);
     }
 
 

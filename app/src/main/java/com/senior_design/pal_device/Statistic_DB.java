@@ -8,25 +8,25 @@ import java.util.Map;
  */
 
 public class Statistic_DB {
-    public String date;
-    public String graph;
-    public String palID;
-    public String patient;
-    public String round;
-    public String status;
-    public String released;
-    public Map<String, Data_DB> data;
+    public String Date;
+    public String Graph;
+    public String PalID;
+    public String PatientID;
+    public String Round;
+    public String Result;
+    public String ReleasedToParent;
+    public Map<String, Data_DB> Data;
 
     public Statistic_DB(){}
 
-    public Statistic_DB(String date, String graph, String palID, String patient, String round, Map<String, Data_DB> data, String status, String released ) {
-        this.date = date;
-        this.graph = graph;
-        this.palID = palID;
-        this.patient = patient;
-        this.round = round;
-        this.data= data;
-        this.status = status;
-        this.released = released;
+    public Statistic_DB(String Date, String Graph, String PalID, String patient, String round, Map<String, Data_DB> data, String status, String released ) {
+        this.Date = Date;
+        this.Graph = Graph;
+        this.PalID = PalID;
+        this.PatientID = patient;
+        this.Round = round;
+        this.Data= data;
+        this.Result = status;
+        this.ReleasedToParent = released;
     }
 }

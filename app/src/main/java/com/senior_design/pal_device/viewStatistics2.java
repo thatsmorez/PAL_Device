@@ -199,7 +199,7 @@ public class viewStatistics2 extends AppCompatActivity {
 
                 Statistic_DB stats = new Statistic_DB(date, graph, palID, inpatient, round, data_db, status, released);
 
-                    String temp = "Round: " + stats.round + "\nStatus: " + stats.status;
+                    String temp = "Round: " + stats.Round + "\nStatus: " + stats.Result;
                     adapter.add(temp);
 
 

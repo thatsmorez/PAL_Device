@@ -38,7 +38,7 @@ public class patient_status_parent extends AppCompatActivity {
         accountUser = bundle.getString("parentUser");
 
         if(status.equals("")){
-            statusText.setText("No text has been released." + '\n' + "Please see you child's music therapist for" + '\n' + "more information.") ;
+            statusText.setText("No data has been released." + '\n' + "Please see you child's music therapist for" + '\n' + "more information.") ;
             statusText.setTextColor(Color.WHITE);
         }else if(status.equals("Below Average")){
             statusText.setText("Your child's sucking ability is within" + '\n' + "the below average range.") ;
