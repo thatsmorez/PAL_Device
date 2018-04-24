@@ -58,6 +58,9 @@ public class parent_home extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(parent_home.this, parent_help.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("parentUser",accountUser);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });

@@ -47,7 +47,7 @@
                 android:layout_weight="1"
                 android:text="Username"
                 android:textColor="@android:color/black"
-                android:textSize="24sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <EditText
@@ -74,7 +74,7 @@
                 android:layout_weight="1"
                 android:text="Password"
                 android:textColor="@android:color/black"
-                android:textSize="24sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <EditText

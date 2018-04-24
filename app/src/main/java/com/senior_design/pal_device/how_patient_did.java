@@ -26,12 +26,9 @@ public class how_patient_did extends AppCompatActivity {
         radioGroup = (RadioGroup) findViewById(R.id.group);
 
         Bundle bundle = getIntent().getExtras();
-        patientID = bundle.getString("patientID");
+        patientID = bundle.getString("patient");
         accountUser = bundle.getString("user");
         round = bundle.getString("round");
-        System.out.println("SARAH " + patientID);
-        System.out.println("SARAH " + round);
-
 
         finishSession.setOnClickListener(new View.OnClickListener(){
             @Override

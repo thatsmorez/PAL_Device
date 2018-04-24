@@ -50,7 +50,7 @@ public class login extends AppCompatActivity {
             public void onClick(View view) {
                 String usern = ed1.getText().toString();
                 String pass = ed2.getText().toString();
-                if(loginInformation.get(usern) != null){
+                if(loginInformation.get(usern) != null ){
                     if(loginInformation.get(usern).username.equals(usern) && loginInformation.get(usern).password.equals(pass)){
                         if(loginInformation.get(usern).access.equals("Parent")){
                             Intent intent = new Intent(login.this, parent_home.class);
@@ -71,6 +71,20 @@ public class login extends AppCompatActivity {
                             intent.putExtras(bundle);
                             startActivity(intent);
                         }
+                    }else {
+                        AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(login.this);
+                        dlgAlert.setMessage("Invalid Username or Password.");
+                        dlgAlert.setTitle("Error Message...");
+                        dlgAlert.setPositiveButton("OK", null);
+                        dlgAlert.setCancelable(true);
+                        dlgAlert.create().show();
+
+                        dlgAlert.setPositiveButton("Ok",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                    }
+                                });
                     }
                 } else {
                     AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(login.this);

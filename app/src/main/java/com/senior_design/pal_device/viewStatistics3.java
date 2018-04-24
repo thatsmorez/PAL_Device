@@ -69,6 +69,7 @@ public class viewStatistics3 extends AppCompatActivity {
 
         selectedPatient = patients_DB.get(patient);
 
+        System.out.println("SARAH, Initializtion Complete");
 
 
         home.setOnClickListener(new View.OnClickListener() {
@@ -153,20 +154,21 @@ public class viewStatistics3 extends AppCompatActivity {
                 String released = (String) dataSnapshot.child("ReleasedToParent").getValue();
                 Map<String,Data_DB> data_db = (Map<String,Data_DB>)dataSnapshot.child("Data").getValue();
 
-                System.out.println("SARAH: " + data_db.toString());
-
                 Statistic_DB stats = new Statistic_DB(date, graph, palID, inpatient, round, data_db, status, released);
 
                 if(round.equals(inputRound)) {
+                    System.out.println("SARAH: Found Round" );
                     Set temp = data_db.entrySet();
                     Iterator iter = temp.iterator();
 
                     while (iter.hasNext()) {
                         Map.Entry entry = (Map.Entry) iter.next();
-                        String in = "Time: " + entry.getKey() + "\nValue: " + entry.getValue();
-                        System.out.println("SARAH: " + in);
+                        System.out.println("SARAH: " + "Time: " + entry.getKey() + "\nValue: " + entry.getValue());
+                        String val = entry.getValue().toString();
+                        val = val.replace("{pressure=", "");
+                        val = val.replace("}","");
+                        String in = "Time: " + entry.getKey() + "\nValue: " + val;
                         adapter.add(in);
-                        System.out.println("SARAH: " + entry.getKey() + " -- " + entry.getValue());
                     }
                 }
 

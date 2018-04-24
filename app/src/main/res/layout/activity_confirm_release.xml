@@ -9,40 +9,39 @@
     tools:layout_editor_absoluteY="81dp">
 
     <LinearLayout
-    android:id="@+id/linearLayout"
-    android:layout_width="0dp"
-    android:layout_height="37dp"
-    android:layout_marginBottom="92dp"
-    android:layout_marginTop="7dp"
-    android:background="@drawable/rounded_square"
-    android:orientation="vertical"
-    android:padding="5dp"
-    app:layout_constraintBottom_toTopOf="@+id/scrollView3"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+        android:layout_height="39dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="7dp"
+        android:background="@drawable/rounded_square"
+        android:orientation="vertical"
+        android:padding="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Release Information"
-        android:textAlignment="center"
-        android:textColor="#FFF"
-        android:textSize="20dp" />
-</LinearLayout>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Release Information"
+            android:textAlignment="center"
+            android:textColor="#FFF"
+            android:textSize="20dp" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout1"
-        android:layout_width="291dp"
-        android:layout_height="51dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_width="0dp"
+        android:layout_height="59dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginStart="60dp"
         android:background="@color/colorPrimary"
         android:orientation="vertical"
         android:padding="5dp"
-        app:layout_constraintBottom_toTopOf="@+id/scrollView3"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout11"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
@@ -66,39 +65,35 @@
             android:textSize="15dp" />
     </LinearLayout>
 
-    <ScrollView
-        android:id="@+id/scrollView3"
+
+    <LinearLayout
+        android:id="@+id/linearLayout11"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="11dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout1">
 
-        <LinearLayout
+        <ListView
+            android:id="@+id/listView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="409dp"
+            android:listSelector="@color/lightGrey" />
+    </LinearLayout>
 
-            <ListView
-                android:id="@+id/listView"
-                android:layout_width="match_parent"
-                android:layout_height="409dp"
-                android:listSelector="@color/lightGrey" />
-        </LinearLayout>
-
-    </ScrollView>
 
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="208dp"
-        android:layout_height="66dp"
+        android:layout_height="48dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView3">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout11">
 
         <Button
             android:id="@+id/select"
@@ -121,8 +116,10 @@
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:layout_marginBottom="2dp"
+        android:layout_height="53dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginStart="18dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -131,7 +128,7 @@
 
         <Button
             android:id="@+id/home"
-            android:layout_width="377dp"
+            android:layout_width="350dp"
             android:layout_height="60dp"
             android:layout_marginBottom="36dp"
             android:layout_marginEnd="14dp"

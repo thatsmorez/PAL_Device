@@ -95,10 +95,10 @@ public class recording_data extends AppCompatActivity {
     int timesBelowThreshold = 0;
     int timesAboveThreshold = 0;
     boolean playingMusic = false;
-    final int timeBelow = 60;
-    int minThreshold = 150;
+    final int timeBelow = 400;
+    int minThreshold = 200;
     final MediaPlayer mPlayer = new MediaPlayer();
-    int timeBeforePlay = 300;
+    int timeBeforePlay = 10;
     HashMap<String, Data_DB> data_DBref = new HashMap<String,Data_DB>();
     boolean firsttime = true;
 
@@ -350,6 +350,8 @@ public class recording_data extends AppCompatActivity {
 
 
     public void createNewDataDBEntry(Map<String, Data_DB> data) {
+
+        mPlayer.stop();
         SimpleDateFormat dtf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         Date now = new Date();
         String date = dtf.format(now);
@@ -505,6 +507,7 @@ public class recording_data extends AppCompatActivity {
             int i = unsignedShortToInt(val1);
 
             parseInfo(i);
+            System.out.println("SARAH VALUE: " + i);
             //15 minutes is 900000 milliseconds
             //30 seconds is 30000
             //5 seconds is 5000 milliseconds
@@ -570,7 +573,6 @@ public class recording_data extends AppCompatActivity {
         //input from sensor is below our minThreshold
         //Ensures that we don't stop the music for outlining data
         if(input <= minThreshold ){
-            timesAboveThreshold = 0;
             timesBelowThreshold++;
         }
 
@@ -583,7 +585,9 @@ public class recording_data extends AppCompatActivity {
 
         //Push data to hashmap to be pushed to the server
         Data_DB temp = new Data_DB(Integer.toString(input));
-        data_DBref.put(DateFormat.getDateTimeInstance().format(new Date()), temp);
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+        Date now = new Date();
+        data_DBref.put(df.format(now), temp);
     }
 
 

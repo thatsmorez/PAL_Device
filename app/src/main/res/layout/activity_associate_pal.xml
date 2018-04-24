@@ -58,7 +58,7 @@
                 android:layout_weight="1"
                 android:paddingLeft="5dp"
                 android:text="Patient I.D."
-                android:textColor="@android:color/black"
+                android:textColor="@android:color/white"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 tools:textColor="@color/common_google_signin_btn_text_dark_default" />
@@ -139,7 +139,7 @@
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="0dp"
+        android:layout_width="377dp"
         android:layout_height="62dp"
         android:layout_marginBottom="23dp"
         android:orientation="vertical"
@@ -150,7 +150,7 @@
 
         <Button
             android:id="@+id/home"
-            android:layout_width="377dp"
+            android:layout_width="346dp"
             android:layout_height="60dp"
             android:layout_marginBottom="36dp"
             android:layout_marginEnd="14dp"

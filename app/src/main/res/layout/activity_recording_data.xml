@@ -50,7 +50,7 @@
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="0dp"
+        android:layout_width="375dp"
         android:layout_height="61dp"
         android:layout_marginBottom="24dp"
         android:orientation="vertical"
@@ -61,7 +61,7 @@
 
         <Button
             android:id="@+id/home"
-            android:layout_width="377dp"
+            android:layout_width="344dp"
             android:layout_height="60dp"
             android:layout_marginBottom="36dp"
             android:layout_marginEnd="14dp"

@@ -71,7 +71,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Below Average - No Responding Well to Treatment"
+                android:text="Below Average - Not Responding Well to Treatment"
                 android:textStyle="bold" />
         </RadioGroup>
 

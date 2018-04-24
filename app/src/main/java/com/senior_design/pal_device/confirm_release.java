@@ -178,7 +178,6 @@ public class confirm_release extends AppCompatActivity {
                 String released = (String) dataSnapshot.child("ReleasedToParent").getValue();
                 Map<String, Data_DB> data_db = (Map<String, Data_DB>) dataSnapshot.child("Data").getValue();
 
-                System.out.println("SARAH: " + data_db.toString());
 
                 Statistic_DB stats = new Statistic_DB(date, graph, palID, inpatient, round, data_db, status, released);
 

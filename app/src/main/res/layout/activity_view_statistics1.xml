@@ -5,12 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/white_background"
-    tools:context=".viewStatistics1">
+    tools:context=".viewStatistics1"
+    tools:layout_editor_absoluteY="81dp">
 
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
-        android:layout_height="38dp"
+        android:layout_height="58dp"
         android:layout_marginBottom="11dp"
         android:layout_marginTop="7dp"
         android:background="@drawable/rounded_square"
@@ -57,7 +58,7 @@
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="208dp"
-        android:layout_height="57dp"
+        android:layout_height="74dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintEnd_toEndOf="parent"
@@ -84,18 +85,21 @@
 
     <LinearLayout
         android:id="@+id/linearLayout3"
-        android:layout_width="0dp"
-        android:layout_height="65dp"
-        android:layout_marginBottom="1dp"
+        android:layout_width="348dp"
+        android:layout_height="58dp"
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="19dp"
+        android:layout_marginStart="19dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.48"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
 
         <Button
             android:id="@+id/home"
-            android:layout_width="377dp"
+            android:layout_width="328dp"
             android:layout_height="60dp"
             android:layout_marginBottom="36dp"
             android:layout_marginEnd="14dp"
