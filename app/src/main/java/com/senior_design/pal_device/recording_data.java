@@ -101,6 +101,7 @@ public class recording_data extends AppCompatActivity {
     int timeBeforePlay = 10;
     HashMap<String, Data_DB> data_DBref = new HashMap<String,Data_DB>();
     boolean firsttime = true;
+    int suckCounter = 0;
 
     File localFile;
     private FirebaseAuth mAuth;
@@ -491,14 +492,6 @@ public class recording_data extends AppCompatActivity {
             gatt.writeDescriptor(descriptor);
 
             starttime = System.currentTimeMillis();
-
-
-            //gatt.disconnect();
-            //if(gatt == null){
-             //   return;
-            //}
-            //gatt.close();
-            //gatt = null;
         }
 
         @Override
@@ -535,29 +528,33 @@ public class recording_data extends AppCompatActivity {
 
     public void parseInfo(int input){
         if(input > minThreshold && playingMusic == false && timesAboveThreshold > timeBeforePlay){
-            playingMusic = true;
-            if(firsttime) {
-                firsttime = false;
-                mStorage.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                        try {
-                            mPlayer.setDataSource(localFile.getAbsolutePath());
-                            mPlayer.setLooping(true);
-                            mPlayer.prepare();
-                            mPlayer.start();
-                        } catch (IOException e) {
-                            System.out.println("prepare() failed");
+            if(suckCounter > 3) {
+                playingMusic = true;
+                if (firsttime) {
+                    firsttime = false;
+                    mStorage.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                            try {
+                                mPlayer.setDataSource(localFile.getAbsolutePath());
+                                mPlayer.setLooping(true);
+                                mPlayer.prepare();
+                                mPlayer.start();
+                            } catch (IOException e) {
+                                System.out.println("prepare() failed");
+                            }
                         }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        System.out.println("Song was not loaded");
-                    }
-                });
-            }else {
-                mPlayer.start();
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            System.out.println("Song was not loaded");
+                        }
+                    });
+                } else {
+                    mPlayer.start();
+                }
+            } else {
+                suckCounter++ ;
             }
 
         }
@@ -581,6 +578,7 @@ public class recording_data extends AppCompatActivity {
             mPlayer.pause();
             playingMusic = false;
             timesAboveThreshold = 0;
+            suckCounter = 0;
         }
 
         //Push data to hashmap to be pushed to the server

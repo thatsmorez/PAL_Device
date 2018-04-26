@@ -9,13 +9,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RadioGroup;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class how_patient_did extends AppCompatActivity {
     Button finishSession;
     RadioGroup radioGroup;
     String patientID,accountUser, round;
+    HashMap<String, Statistic_DB> stats_DB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +36,11 @@ public class how_patient_did extends AppCompatActivity {
         patientID = bundle.getString("patient");
         accountUser = bundle.getString("user");
         round = bundle.getString("round");
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference myRef = database.getReference();
+
+        stats_DB = new HashMap<String, Statistic_DB>();
 
         finishSession.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -49,8 +61,7 @@ public class how_patient_did extends AppCompatActivity {
                                 }
                             });
                 } else {
-                    FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    DatabaseReference myRef = database.getReference();
+
                     int id = radioGroup.getCheckedRadioButtonId();
                     if(id == 2131165323) {
                         //Above Average
@@ -71,6 +82,44 @@ public class how_patient_did extends AppCompatActivity {
                     intent.putExtras(bundle);
                     startActivity(intent);
                 }
+            }
+        });
+
+        ChildEventListener childEventListener = myRef.child("Statistics").child(patientID).addChildEventListener(new ChildEventListener() {
+
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+
+                String date = (String) dataSnapshot.child("Date").getValue();
+                String graph = (String) dataSnapshot.child("Graph").getValue();
+                String palID = (String) dataSnapshot.child("PalID").getValue();
+                String patient = (String) dataSnapshot.child("PatientID").getValue();
+                String round = (String) dataSnapshot.child("Round").getValue();
+                String status = (String) dataSnapshot.child("Status").getValue();
+                String released = (String) dataSnapshot.child("ReleasedToParent").getValue();
+
+                Map<String,Data_DB> data_db = (Map<String,Data_DB>)dataSnapshot.child("Data").getValue();
+
+
+
+                Statistic_DB stat = new Statistic_DB(date, graph, palID, patient, round, data_db, status, released);
+                stats_DB.put(round, stat);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String prevChildKey) {
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
             }
         });
 
